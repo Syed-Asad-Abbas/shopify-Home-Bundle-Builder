@@ -15,7 +15,7 @@
         "bundle_product_YDBPr6": {
           "type": "bundle_product",
           "settings": {
-            "product": "",
+            "product": "cam-unlimited",
             "category": "Plan"
           }
         },
