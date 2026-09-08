@@ -39,6 +39,12 @@
         "show_text_below": false
       }
     },
+    "bundle_builder": {
+      "type": "bundle-builder",
+      "settings": {
+        "heading": "Let's get started!"
+      }
+    },
     "featured_collection": {
       "type": "featured-collection",
       "settings": {
@@ -69,6 +75,7 @@
     }
   },
   "order": [
+    "bundle_builder",
     "image_banner",
     "featured_collection"
   ]
