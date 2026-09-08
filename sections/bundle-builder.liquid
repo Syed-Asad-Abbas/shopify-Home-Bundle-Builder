@@ -1,0 +1,59 @@
+<div class="bundle-builder-section" id="bundle-builder-container">
+  {% comment %} 
+    Mount point for the React App 
+  {% endcomment %}
+  <div id="react-bundle-builder-root"></div>
+</div>
+
+{% comment %} 
+  Inject dynamic product data as JSON so the React app can read it on mount.
+  For now, we mock some structure, but in a real scenario you would iterate over selected collections.
+{% endcomment %}
+<script type="application/json" id="bundle-builder-data">
+  {
+    "sectionSettings": {
+      "heading": {{ section.settings.heading | json }}
+    },
+    "products": [
+      {% for product in collections['all'].products %}
+        {
+          "id": {{ product.id | json }},
+          "title": {{ product.title | json }},
+          "price": {{ product.price | json }},
+          "compare_at_price": {{ product.compare_at_price | json }},
+          "variants": {{ product.variants | json }},
+          "images": [
+            {% for image in product.images %}
+              {{ image.src | image_url | json }}{% unless forloop.last %},{% endunless %}
+            {% endfor %}
+          ]
+        }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    ]
+  }
+</script>
+
+{% comment %} 
+  Load the compiled React assets (these are built by Vite)
+{% endcomment %}
+<script src="{{ 'bundle-builder.js' | asset_url }}" defer="defer"></script>
+{{ 'bundle-builder.css' | asset_url | stylesheet_tag }}
+
+{% schema %}
+{
+  "name": "Bundle Builder",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Let's get started!"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Bundle Builder"
+    }
+  ]
+}
+{% endschema %}
