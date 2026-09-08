@@ -11,6 +11,74 @@
   "sections": {
     "bundle_builder": {
       "type": "bundle-builder",
+      "blocks": {
+        "bundle_product_YDBPr6": {
+          "type": "bundle_product",
+          "settings": {
+            "product": "",
+            "category": "Plan"
+          }
+        },
+        "bundle_product_iNNKDE": {
+          "type": "bundle_product",
+          "settings": {
+            "product": "wyze-microsd-card-256gb",
+            "category": "Accessories"
+          }
+        },
+        "bundle_product_Vmbkp6": {
+          "type": "bundle_product",
+          "settings": {
+            "product": "wyze-sense-motion-sensor",
+            "category": "Sensors"
+          }
+        },
+        "bundle_product_dNqhgG": {
+          "type": "bundle_product",
+          "settings": {
+            "product": "wyze-sense-hub",
+            "category": "Sensors"
+          }
+        },
+        "bundle_product_HqVTQA": {
+          "type": "bundle_product",
+          "settings": {
+            "product": "wyze-battery-cam-pro",
+            "category": "Cameras"
+          }
+        },
+        "bundle_product_9xJ4ew": {
+          "type": "bundle_product",
+          "settings": {
+            "product": "wyze-cam-floodlight-v2",
+            "category": "Cameras"
+          }
+        },
+        "bundle_product_xMjMe4": {
+          "type": "bundle_product",
+          "settings": {
+            "product": "wyze-cam-pan-v3",
+            "category": "Cameras"
+          }
+        },
+        "bundle_product_BcmQ9R": {
+          "type": "bundle_product",
+          "settings": {
+            "product": "wyze-cam-v4",
+            "category": "Cameras"
+          }
+        }
+      },
+      "block_order": [
+        "bundle_product_YDBPr6",
+        "bundle_product_iNNKDE",
+        "bundle_product_Vmbkp6",
+        "bundle_product_dNqhgG",
+        "bundle_product_HqVTQA",
+        "bundle_product_9xJ4ew",
+        "bundle_product_xMjMe4",
+        "bundle_product_BcmQ9R"
+      ],
       "settings": {
         "heading": "Let's get started!"
       }
