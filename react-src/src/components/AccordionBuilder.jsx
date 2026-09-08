@@ -43,9 +43,7 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
 
   return (
     <div className="accordion-container">
-      <div className="accordion-title-row">
-        <span>STEP {activeStep} OF 4</span>
-      </div>
+
 
       {steps.map((step) => {
         const isOpen = activeStep === step.id;
@@ -55,7 +53,11 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
         const stepProducts = products.filter(p => p.category === step.category);
 
         return (
-          <div key={step.id} className={`accordion-step ${isOpen ? 'open' : 'closed'}`}>
+          <React.Fragment key={step.id}>
+            <div className="accordion-title-row">
+              <span>STEP {step.id} OF 4</span>
+            </div>
+            <div className={`accordion-step ${isOpen ? 'open' : 'closed'}`}>
             <div 
               className="accordion-header"
               onClick={() => setActiveStep(step.id)}
@@ -95,6 +97,7 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
               </div>
             )}
           </div>
+        </React.Fragment>
         );
       })}
     </div>
