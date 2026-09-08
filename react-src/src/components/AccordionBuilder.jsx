@@ -1,0 +1,105 @@
+import React from 'react';
+import StepCard from './StepCard';
+
+/**
+ * Goal: Render the multi-step accordion system on the left column.
+ * Method: Iterates through defined steps, displaying the header and conditionally rendering the body based on the `activeStep`.
+ * Inputs/Outputs: 
+ *  - products (Array): The list of Shopify products.
+ *  - cartState (Object): The current cart quantities mapping.
+ *  - activeStep (Number): The currently open step (1-4).
+ *  - setActiveStep (Function): Updates the active step.
+ *  - onQuantityChange (Function): Handler for quantity updates.
+ *  - Returns: JSX Element
+ */
+const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQuantityChange }) => {
+  const steps = [
+    { id: 1, title: 'Choose your cameras', category: 'Cameras' },
+    { id: 2, title: 'Choose your plan', category: 'Plan' },
+    { id: 3, title: 'Choose your sensors', category: 'Sensors' },
+    { id: 4, title: 'Add extra protection', category: 'Accessories' },
+  ];
+
+  /**
+   * Goal: Calculate how many items are selected for a specific category.
+   * Method: Filters cartState keys based on products matching the category.
+   * Inputs/Outputs: category name -> returns number of selected items.
+   */
+  const getSelectedCount = (category) => {
+    // In a real scenario with Shopify data, products should have custom tags or types indicating category.
+    // We will simulate it by filtering the products list.
+    const categoryProducts = products.filter(p => p.type === category || p.tags?.includes(category));
+    let count = 0;
+    
+    // Sum quantities for products in this category
+    Object.entries(cartState).forEach(([key, qty]) => {
+      const [productId] = key.split('-');
+      if (categoryProducts.some(p => String(p.id) === String(productId))) {
+        count += qty;
+      }
+    });
+    
+    return count;
+  };
+
+  return (
+    <div className="accordion-container">
+      <div className="accordion-title-row">
+        <span>STEP {activeStep} OF 4</span>
+      </div>
+
+      {steps.map((step) => {
+        const isOpen = activeStep === step.id;
+        const selectedCount = getSelectedCount(step.category);
+        
+        // Filter products for this specific step/category
+        const stepProducts = products.filter(p => p.type === step.category || p.tags?.includes(step.category));
+
+        return (
+          <div key={step.id} className={`accordion-step ${isOpen ? 'open' : 'closed'}`}>
+            <div 
+              className="accordion-header"
+              onClick={() => setActiveStep(step.id)}
+            >
+              <div className="accordion-header-left">
+                <span className="step-icon">Icon</span>
+                <h2>{step.title}</h2>
+              </div>
+              <div className="accordion-header-right">
+                {selectedCount > 0 && <span className="selected-text">{selectedCount} selected</span>}
+                <span className="chevron">{isOpen ? '▲' : '▼'}</span>
+              </div>
+            </div>
+
+            {isOpen && (
+              <div className="accordion-body">
+                <div className="product-grid">
+                  {stepProducts.map(product => (
+                    <StepCard 
+                      key={product.id} 
+                      product={product} 
+                      cartState={cartState}
+                      onQuantityChange={onQuantityChange}
+                    />
+                  ))}
+                  {stepProducts.length === 0 && <p>No products available in this category.</p>}
+                </div>
+                
+                {step.id < 4 && (
+                  <button 
+                    className="btn btn-outline next-step-btn"
+                    onClick={() => setActiveStep(step.id + 1)}
+                  >
+                    Next: {steps[step.id]?.title}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+export default AccordionBuilder;
