@@ -26,9 +26,8 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
    * Inputs/Outputs: category name -> returns number of selected items.
    */
   const getSelectedCount = (category) => {
-    // In a real scenario with Shopify data, products should have custom tags or types indicating category.
-    // We will simulate it by filtering the products list.
-    const categoryProducts = products.filter(p => p.type === category || p.tags?.includes(category));
+    // We map products based on the category defined in the Shopify Customizer block
+    const categoryProducts = products.filter(p => p.category === category);
     let count = 0;
     
     // Sum quantities for products in this category
@@ -53,7 +52,7 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
         const selectedCount = getSelectedCount(step.category);
         
         // Filter products for this specific step/category
-        const stepProducts = products.filter(p => p.type === step.category || p.tags?.includes(step.category));
+        const stepProducts = products.filter(p => p.category === step.category);
 
         return (
           <div key={step.id} className={`accordion-step ${isOpen ? 'open' : 'closed'}`}>

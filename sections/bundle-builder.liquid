@@ -7,7 +7,7 @@
 
 {% comment %} 
   Inject dynamic product data as JSON so the React app can read it on mount.
-  For now, we mock some structure, but in a real scenario you would iterate over selected collections.
+  We iterate over the blocks added by the user in the Theme Customizer.
 {% endcomment %}
 <script type="application/json" id="bundle-builder-data">
   {
@@ -15,19 +15,26 @@
       "heading": {{ section.settings.heading | json }}
     },
     "products": [
-      {% for product in collections['all'].products %}
-        {
-          "id": {{ product.id | json }},
-          "title": {{ product.title | json }},
-          "price": {{ product.price | json }},
-          "compare_at_price": {{ product.compare_at_price | json }},
-          "variants": {{ product.variants | json }},
-          "images": [
-            {% for image in product.images %}
-              {{ image.src | image_url | json }}{% unless forloop.last %},{% endunless %}
-            {% endfor %}
-          ]
-        }{% unless forloop.last %},{% endunless %}
+      {% assign first = true %}
+      {% for block in section.blocks %}
+        {% assign product = block.settings.product %}
+        {% if product != blank %}
+          {% if first == false %},{% endif %}
+          {
+            "id": {{ product.id | json }},
+            "title": {{ product.title | json }},
+            "price": {{ product.price | json }},
+            "compare_at_price": {{ product.compare_at_price | json }},
+            "variants": {{ product.variants | json }},
+            "images": [
+              {% for image in product.images %}
+                {{ image.src | image_url | json }}{% unless forloop.last %},{% endunless %}
+              {% endfor %}
+            ],
+            "category": {{ block.settings.category | json }}
+          }
+          {% assign first = false %}
+        {% endif %}
       {% endfor %}
     ]
   }
@@ -48,6 +55,31 @@
       "id": "heading",
       "label": "Heading",
       "default": "Let's get started!"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "bundle_product",
+      "name": "Bundle Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Select Product"
+        },
+        {
+          "type": "select",
+          "id": "category",
+          "label": "Category / Step",
+          "options": [
+            { "value": "Cameras", "label": "Cameras" },
+            { "value": "Plan", "label": "Plan" },
+            { "value": "Sensors", "label": "Sensors" },
+            { "value": "Accessories", "label": "Accessories" }
+          ],
+          "default": "Cameras"
+        }
+      ]
     }
   ],
   "presets": [
