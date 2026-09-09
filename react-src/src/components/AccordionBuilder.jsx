@@ -14,10 +14,10 @@ import StepCard from './StepCard';
  */
 const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQuantityChange }) => {
   const steps = [
-    { id: 1, title: 'Choose your cameras', category: 'Cameras' },
-    { id: 2, title: 'Choose your plan', category: 'Plan' },
-    { id: 3, title: 'Choose your sensors', category: 'Sensors' },
-    { id: 4, title: 'Add extra protection', category: 'Accessories' },
+    { id: 1, title: 'Choose your cameras', category: 'Cameras', icon: '/camera-icon.svg' },
+    { id: 2, title: 'Choose your plan', category: 'Plan', icon: '/plan-icon.svg' },
+    { id: 3, title: 'Choose your sensors', category: 'Sensors', icon: '/sensors-icons.svg' },
+    { id: 4, title: 'Add extra protection', category: 'Accessories', icon: '/protection-icon.svg' },
   ];
 
   /**
@@ -43,8 +43,6 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
 
   return (
     <div className="accordion-container">
-
-
       {steps.map((step) => {
         const isOpen = activeStep === step.id;
         const selectedCount = getSelectedCount(step.category);
@@ -53,24 +51,26 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
         const stepProducts = products.filter(p => p.category === step.category);
 
         return (
-          <React.Fragment key={step.id}>
+          <div key={step.id} className="item-wrapper">
             <div className="accordion-title-row">
               <span>STEP {step.id} OF 4</span>
             </div>
             <div className={`accordion-step ${isOpen ? 'open' : 'closed'}`}>
-            <div 
-              className="accordion-header"
-              onClick={() => setActiveStep(step.id)}
-            >
-              <div className="accordion-header-left">
-                <span className="step-icon">Icon</span>
-                <h2>{step.title}</h2>
+              <div 
+                className="accordion-header"
+                onClick={() => setActiveStep(isOpen ? null : step.id)}
+              >
+                <div className="accordion-header-left">
+                  <img src={step.icon} alt="" className="step-icon" />
+                  <h2>{step.title}</h2>
+                </div>
+                <div className="accordion-header-right">
+                  {selectedCount > 0 && <span className="selected-text">{selectedCount} selected</span>}
+                  <div className={`accordion-arrow ${isOpen ? 'open' : ''}`}>
+                    <div className="polygon-1"></div>
+                  </div>
+                </div>
               </div>
-              <div className="accordion-header-right">
-                {selectedCount > 0 && <span className="selected-text">{selectedCount} selected</span>}
-                <span className="chevron">{isOpen ? '▲' : '▼'}</span>
-              </div>
-            </div>
 
             {isOpen && (
               <div className="accordion-body">
@@ -97,7 +97,7 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
               </div>
             )}
           </div>
-        </React.Fragment>
+        </div>
         );
       })}
     </div>

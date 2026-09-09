@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AccordionBuilder from './components/AccordionBuilder';
 import ReviewPanel from './components/ReviewPanel';
+import mockData from './products.json';
 import './index.css';
 
 /**
@@ -23,21 +24,73 @@ const App = () => {
         setShopData(parsedData);
       } catch (err) {
         console.error("Error parsing Shopify product data", err);
+        setShopData(mockData);
       }
+    } else {
+      // Fallback for local development environment
+      setShopData(mockData);
     }
 
-    // 2. Load Cart State from LocalStorage
+    // 2. Load Cart State from LocalStorage (or initialize with Figma preview values)
+    const defaultFigmaCart = {
+      '1-101': 1, // Wyze Cam v4
+      '2-201': 2, // Wyze Cam Pan v3
+      '3-301': 1, // Cam Unlimited
+      '4-401': 2, // Wyze Sense Motion Sensor
+      '5-501': 1, // Wyze Sense Hub
+      '6-601': 2, // Wyze MicroSD Card (256GB)
+    };
+
     const savedCart = localStorage.getItem('bundle-builder-cart');
     if (savedCart) {
       try {
         setCartState(JSON.parse(savedCart));
       } catch (err) {
         console.error("Error parsing saved cart data", err);
+        setCartState(defaultFigmaCart);
       }
+    } else {
+      setCartState(defaultFigmaCart);
     }
     
     setIsLoaded(true);
   }, []);
+
+  useEffect(() => {
+    /**
+     * Goal: Automatically expand the matching accordion step when a merchant selects a block in the Shopify Customizer.
+     * Method: Listens to Shopify's 'shopify:block:select' DOM event, finds the product by blockId, and updates activeStep.
+     * Inputs/Outputs: 
+     *  - event (CustomEvent): Contains selected blockId in event.detail.
+     *  - Returns: void (Updates activeStep state).
+     */
+    const handleShopifyBlockSelect = (event) => {
+      const selectedBlockId = event.detail?.blockId;
+      if (!selectedBlockId) return;
+
+      const matchingProduct = shopData.products?.find(
+        (p) => String(p.blockId) === String(selectedBlockId)
+      );
+      if (!matchingProduct) return;
+
+      const categoryToStep = {
+        Cameras: 1,
+        Plan: 2,
+        Sensors: 3,
+        Accessories: 4,
+      };
+
+      const targetStep = categoryToStep[matchingProduct.category];
+      if (targetStep) {
+        setActiveStep(targetStep);
+      }
+    };
+
+    document.addEventListener('shopify:block:select', handleShopifyBlockSelect);
+    return () => {
+      document.removeEventListener('shopify:block:select', handleShopifyBlockSelect);
+    };
+  }, [shopData.products]);
 
   /**
    * Goal: Handle updates to the cart quantities for specific product variants.

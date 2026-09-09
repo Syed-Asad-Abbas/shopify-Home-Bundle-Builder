@@ -22,6 +22,7 @@
           {% if first == false %},{% endif %}
           {
             "id": {{ product.id | json }},
+            "blockId": {{ block.id | json }},
             "title": {{ product.title | json }},
             "price": {{ product.price | json }},
             "compare_at_price": {{ product.compare_at_price | json }},
@@ -43,6 +44,50 @@
 {% comment %} 
   Load the compiled React assets (these are built by Vite)
 {% endcomment %}
+<style>
+  @font-face {
+    font-family: 'Gilroy-Bold';
+    src: url("{{ 'Gilroy-Bold.ttf' | asset_url }}") format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Gilroy-Medium';
+    src: url("{{ 'Gilroy-Medium.ttf' | asset_url }}") format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Gilroy-medium';
+    src: url("{{ 'Gilroy-Medium.ttf' | asset_url }}") format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Gilroy-SemiBold';
+    src: url("{{ 'Gilroy-Medium.ttf' | asset_url }}") format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Gilroy-semibold';
+    src: url("{{ 'Gilroy-Medium.ttf' | asset_url }}") format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Gilroy-Regular';
+    src: url("{{ 'Gilroy-Regular.ttf' | asset_url }}") format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+</style>
 <script src="{{ 'bundle-builder.js' | asset_url }}" defer="defer"></script>
 {{ 'bundle-builder.css' | asset_url | stylesheet_tag }}
 

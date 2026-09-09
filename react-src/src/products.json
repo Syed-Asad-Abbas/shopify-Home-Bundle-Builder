@@ -1,0 +1,87 @@
+{
+  "sectionSettings": {
+    "heading": "Let's get started!"
+  },
+  "products": [
+    {
+      "id": 1,
+      "title": "Wyze Cam v4",
+      "description": "2.5K HD security camera with color night vision.",
+      "learnMoreUrl": "#",
+      "price": 2798,
+      "compare_at_price": 3598,
+      "category": "Cameras",
+      "images": ["/Wyze Cam v4.png"],
+      "variants": [
+        { "id": 101, "title": "White", "option1": "White" },
+        { "id": 102, "title": "Grey", "option1": "Grey" },
+        { "id": 103, "title": "Black", "option1": "Black" }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Wyze Cam Pan v3",
+      "description": "360° pan and tilt indoor/outdoor camera.",
+      "learnMoreUrl": "#",
+      "price": 2399,
+      "compare_at_price": 2899,
+      "category": "Cameras",
+      "images": ["/Wyze Cam Pan v3.png"],
+      "variants": [
+        { "id": 201, "title": "White", "option1": "White" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Cam Unlimited",
+      "description": "Unlimited cameras, AI alerts, and cloud recordings.",
+      "learnMoreUrl": "#",
+      "price": 999,
+      "compare_at_price": 1299,
+      "category": "Plan",
+      "images": ["/plan-icon.svg"],
+      "variants": [
+        { "id": 301, "title": "Default Title", "option1": "Default Title" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Wyze Sense Motion Sensor",
+      "description": "Detects motion within 120° FOV up to 25 feet.",
+      "learnMoreUrl": "#",
+      "price": 2999,
+      "compare_at_price": null,
+      "category": "Sensors",
+      "images": ["/Wyze Sense Motion Sensor.png"],
+      "variants": [
+        { "id": 401, "title": "Default Title", "option1": "Default Title" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Wyze Sense Hub (Required)",
+      "description": "Connects up to 100 sensors to home monitoring.",
+      "learnMoreUrl": "#",
+      "price": 0,
+      "compare_at_price": 2992,
+      "category": "Sensors",
+      "images": ["/Wyze Sense Hub.png"],
+      "variants": [
+        { "id": 501, "title": "Default Title", "option1": "Default Title" }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Wyze MicroSD Card (256GB)",
+      "description": "High-endurance continuous local video recording.",
+      "learnMoreUrl": "#",
+      "price": 2098,
+      "compare_at_price": null,
+      "category": "Accessories",
+      "images": ["/Wyze MicroSD Card (256GB).png"],
+      "variants": [
+        { "id": 601, "title": "Default Title", "option1": "Default Title" }
+      ]
+    }
+  ]
+}
