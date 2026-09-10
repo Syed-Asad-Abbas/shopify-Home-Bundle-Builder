@@ -172,7 +172,7 @@ body {
 }
 
 .accordion-body {
-  padding: 20px 0;
+  padding: 20px 4px;
   background-color: var(--white);
   width: 100%;
   box-sizing: border-box;
@@ -197,7 +197,7 @@ body {
 /* Step Card */
 .step-card {
   background: var(--white);
-  border: 1px solid #E5E7EB;
+  border: 1px solid #CED6DE;
   border-radius: 12px;
   padding: 16px;
   display: flex;

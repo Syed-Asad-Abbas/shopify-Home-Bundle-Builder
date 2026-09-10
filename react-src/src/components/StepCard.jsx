@@ -29,6 +29,12 @@ const StepCard = ({ product, cartState, onQuantityChange, assetUrls = {} }) => {
   // Variant image fallback: check if active variant has an image, else use primary product image
   const cardImage = activeVariant?.featured_image?.src || activeVariant?.image || product.images?.[0];
 
+  // Determine if this product has any quantity selected in cart across all variants
+  const totalProductQty = product.variants && product.variants.length > 0
+    ? product.variants.reduce((sum, v) => sum + (cartState[`${product.id}-${v.id}`] || 0), 0)
+    : quantity;
+  const isSelected = totalProductQty > 0;
+
   /**
    * Goal: Handle quantity updates for this specific product variant.
    * Method: Calls the global handler with the calculated new quantity ensuring it doesn't drop below 0.
@@ -44,7 +50,7 @@ const StepCard = ({ product, cartState, onQuantityChange, assetUrls = {} }) => {
 
   return (
     <div 
-      className={`step-card ${quantity > 0 ? 'selected' : ''}`}
+      className={`step-card ${isSelected ? 'selected' : ''}`}
       data-shopify-editor-block={product.blockId ? JSON.stringify({ id: product.blockId }) : undefined}
     >
       {/* Product Image & Optional Discount Badge */}
