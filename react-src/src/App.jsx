@@ -119,27 +119,7 @@ const App = () => {
   const [cartState, setCartState] = useState(() => loadInitialCartState(shopData.products));
   const [activeStep, setActiveStep] = useState(1);
 
-  useEffect(() => {
-    /**
-     * Goal: Re-sync product data dynamically if Shopify Theme Editor triggers a section load.
-     * Method: Attaches event listener to window/document for shopify:section:load and reloads shopData with functional immutable state setter.
-     * Inputs/Outputs: CustomEvent -> updates shopData state.
-     */
-    const handleSectionLoad = () => {
-      const refreshedData = loadShopifyData();
-      setShopData(prev => ({
-        ...prev,
-        sectionSettings: { ...refreshedData.sectionSettings },
-        products: refreshedData.products,
-        assetUrls: { ...refreshedData.assetUrls }
-      }));
-    };
-
-    document.addEventListener('shopify:section:load', handleSectionLoad);
-    return () => {
-      document.removeEventListener('shopify:section:load', handleSectionLoad);
-    };
-  }, []);
+  // Removed redundant 'shopify:section:load' listener. main.jsx handles this by remounting the app.
 
   useEffect(() => {
     /**

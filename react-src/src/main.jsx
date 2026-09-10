@@ -9,11 +9,19 @@ import './index.css'
  * Method: Stores root reference on window.__BUNDLE_BUILDER_REACT_ROOT__ across script evaluations.
  * Inputs/Outputs: Window reference or null.
  */
-let reactRoot = window.__BUNDLE_BUILDER_REACT_ROOT__ || null;
+// Cleanup any existing root left by a previous script evaluation
+if (window.__BUNDLE_BUILDER_REACT_ROOT__) {
+  try {
+    window.__BUNDLE_BUILDER_REACT_ROOT__.unmount();
+  } catch (e) {
+    // suppress errors
+  }
+  window.__BUNDLE_BUILDER_REACT_ROOT__ = null;
+}
 
 /**
  * Goal: Mount or re-mount the React application onto the Shopify Liquid DOM root node safely.
- * Method: Locates 'react-bundle-builder-root'. If already mounted on this element, updates via render(); otherwise creates a new root safely with error handling and wraps in ErrorBoundary.
+ * Method: Uses window.__BUNDLE_BUILDER_REACT_ROOT__ exclusively to avoid closure staleness across script re-evaluations.
  * Inputs/Outputs:
  *  - Inputs: None (reads DOM element directly).
  *  - Outputs: void (side effect: creates or updates React component tree).
@@ -25,29 +33,17 @@ const mountReactApp = () => {
   }
 
   try {
-    // If a root already exists and its container is still the current DOM node, render into it directly
-    if (reactRoot && reactRoot._internalRoot?.containerInfo === rootElement) {
-      reactRoot.render(
-        <React.StrictMode>
-          <ErrorBoundary>
-            <App />
-          </ErrorBoundary>
-        </React.StrictMode>,
-      );
-      return;
-    }
-
-    // If an old root was attached to a detached container, cleanly unmount it
-    if (reactRoot) {
+    // If a root already exists in this script evaluation, cleanly unmount it
+    if (window.__BUNDLE_BUILDER_REACT_ROOT__) {
       try {
-        reactRoot.unmount();
+        window.__BUNDLE_BUILDER_REACT_ROOT__.unmount();
       } catch {
         // Suppress unmount errors on detached nodes
       }
-      reactRoot = null;
+      window.__BUNDLE_BUILDER_REACT_ROOT__ = null;
     }
 
-    reactRoot = ReactDOM.createRoot(rootElement);
+    const reactRoot = ReactDOM.createRoot(rootElement);
     window.__BUNDLE_BUILDER_REACT_ROOT__ = reactRoot;
 
     reactRoot.render(
@@ -55,13 +51,13 @@ const mountReactApp = () => {
         <ErrorBoundary>
           <App />
         </ErrorBoundary>
-      </React.StrictMode>,
+      </React.StrictMode>
     );
   } catch (error) {
     console.error("Bundle Builder mount failure, attempting recovery:", error);
     try {
       rootElement.innerHTML = '';
-      reactRoot = ReactDOM.createRoot(rootElement);
+      const reactRoot = ReactDOM.createRoot(rootElement);
       window.__BUNDLE_BUILDER_REACT_ROOT__ = reactRoot;
       reactRoot.render(
         <ErrorBoundary>
@@ -79,29 +75,30 @@ mountReactApp();
 
 /**
  * Goal: Listen for Shopify Theme Editor section re-renders and re-mount the React application idempotently.
- * Method: Attaches event listeners for 'shopify:section:load' and 'shopify:section:unload' ensuring single registration via window flag.
- * Inputs/Outputs:
- *  - Inputs: CustomEvent fired by Shopify Theme Customizer.
- *  - Outputs: void (triggers mountReactApp or safely unmounts reactRoot).
+ * Method: Attaches event listeners for 'shopify:section:load' and 'shopify:section:unload' ensuring single registration via window flag. 
+ * Uses global mount function reference so old listeners always call the latest code.
  */
+window.__BUNDLE_BUILDER_MOUNT__ = mountReactApp;
+
 if (!window.__BUNDLE_BUILDER_LISTENERS_ATTACHED__) {
   window.__BUNDLE_BUILDER_LISTENERS_ATTACHED__ = true;
 
   document.addEventListener('shopify:section:load', (event) => {
     const container = document.getElementById('bundle-builder-container') || document.getElementById('react-bundle-builder-root');
     if (container || event.target?.querySelector?.('#react-bundle-builder-root')) {
-      mountReactApp();
+      if (typeof window.__BUNDLE_BUILDER_MOUNT__ === 'function') {
+        window.__BUNDLE_BUILDER_MOUNT__();
+      }
     }
   });
 
   document.addEventListener('shopify:section:unload', (event) => {
-    if (event.target?.querySelector?.('#react-bundle-builder-root') && reactRoot) {
+    if (event.target?.querySelector?.('#react-bundle-builder-root') && window.__BUNDLE_BUILDER_REACT_ROOT__) {
       try {
-        reactRoot.unmount();
+        window.__BUNDLE_BUILDER_REACT_ROOT__.unmount();
       } catch {
         // ignore
       }
-      reactRoot = null;
       window.__BUNDLE_BUILDER_REACT_ROOT__ = null;
     }
   });

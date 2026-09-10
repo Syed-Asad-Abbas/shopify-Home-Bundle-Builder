@@ -8,6 +8,8 @@ export default defineConfig({
   build: {
     outDir: '../assets',
     emptyOutDir: false, // Don't empty the Shopify assets folder!
+    minify: false, // Output unminified JS for readability
+    cssMinify: false, // Output unminified CSS for readability
     rollupOptions: {
       input: resolve(__dirname, 'src/main.jsx'),
       output: {
