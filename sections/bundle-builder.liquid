@@ -23,16 +23,33 @@
         {% assign product = block.settings.product %}
         {% if product != blank %}
           {% if first == false %},{% endif %}
+          {%- liquid
+            assign title = block.settings.custom_title | default: product.title
+            assign description = block.settings.custom_description | default: product.description | strip_html
+            assign learn_more_url = block.settings.learn_more_url | default: product.url
+            assign badge_text = block.settings.badge_text
+            assign price = product.price
+            assign compare_at_price = product.compare_at_price
+            if block.settings.custom_price != blank
+              assign price = block.settings.custom_price | times: 100 | round
+            endif
+            if block.settings.custom_compare_at_price != blank
+              assign compare_at_price = block.settings.custom_compare_at_price | times: 100 | round
+            endif
+          -%}
           {
             "id": {{ product.id | json }},
             "blockId": {{ block.id | json }},
-            "title": {{ product.title | json }},
-            "price": {{ product.price | json }},
-            "compare_at_price": {{ product.compare_at_price | json }},
+            "title": {{ title | json }},
+            "description": {{ description | json }},
+            "learnMoreUrl": {{ learn_more_url | json }},
+            "badgeText": {{ badge_text | json }},
+            "price": {{ price | json }},
+            "compare_at_price": {{ compare_at_price | json }},
             "variants": {{ product.variants | json }},
             "images": [
               {% for image in product.images %}
-                {{ image.src | image_url | json }}{% unless forloop.last %},{% endunless %}
+                {{ image.src | image_url: width: 800 | json }}{% unless forloop.last %},{% endunless %}
               {% endfor %}
             ],
             "category": {{ block.settings.category | json }}
@@ -140,6 +157,36 @@
             { "value": "Accessories", "label": "Accessories" }
           ],
           "default": "Cameras"
+        },
+        {
+          "type": "text",
+          "id": "custom_title",
+          "label": "Custom Title (optional)"
+        },
+        {
+          "type": "textarea",
+          "id": "custom_description",
+          "label": "Custom Description (optional)"
+        },
+        {
+          "type": "text",
+          "id": "custom_price",
+          "label": "Custom Price (dollars, e.g. 27.98) (optional)"
+        },
+        {
+          "type": "text",
+          "id": "custom_compare_at_price",
+          "label": "Custom Compare-at Price (dollars, e.g. 35.98) (optional)"
+        },
+        {
+          "type": "text",
+          "id": "badge_text",
+          "label": "Custom Badge Text (e.g. Save 22%) (optional)"
+        },
+        {
+          "type": "url",
+          "id": "learn_more_url",
+          "label": "Learn More URL (optional)"
         }
       ]
     }

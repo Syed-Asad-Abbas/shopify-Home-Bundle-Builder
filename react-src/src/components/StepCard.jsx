@@ -23,6 +23,11 @@ const StepCard = ({ product, cartState, onQuantityChange }) => {
   const currentPrice = activeVariant?.price || product.price;
   const hasDiscount = comparePrice && comparePrice > currentPrice;
   const discountPercent = hasDiscount ? Math.round(((comparePrice - currentPrice) / comparePrice) * 100) : 0;
+  // Badge display: prefer custom badge text from Shopify block or fallback to computed discount percent
+  const displayBadge = product.badgeText || (hasDiscount ? `Save ${discountPercent}%` : null);
+
+  // Variant image fallback: check if active variant has an image, else use primary product image
+  const cardImage = activeVariant?.featured_image?.src || activeVariant?.image || product.images?.[0];
 
   /**
    * Goal: Handle quantity updates for this specific product variant.
@@ -44,11 +49,11 @@ const StepCard = ({ product, cartState, onQuantityChange }) => {
     >
       {/* Product Image & Optional Discount Badge */}
       <div className="step-card-image-wrapper">
-        {hasDiscount && (
-          <span className="discount-badge">Save {discountPercent}%</span>
+        {displayBadge && (
+          <span className="discount-badge">{displayBadge}</span>
         )}
-        {product.images && product.images.length > 0 ? (
-          <img src={product.images[0]} alt={product.title} />
+        {cardImage ? (
+          <img src={cardImage} alt={product.title} />
         ) : (
           <div className="placeholder-image">Image</div>
         )}
@@ -76,6 +81,7 @@ const StepCard = ({ product, cartState, onQuantityChange }) => {
             variants={product.variants} 
             activeVariant={activeVariant} 
             setActiveVariant={setActiveVariant} 
+            productTitle={product.title}
           />
         )}
         
