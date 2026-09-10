@@ -5,113 +5,134 @@ import mockData from './products.json';
 import './index.css';
 
 /**
+ * Goal: Parse the dynamic Shopify bundle configuration data from the DOM script element.
+ * Method: Reads JSON content from document.getElementById('bundle-builder-data'), validates structure, and immutably merges with local fallbacks.
+ * Inputs/Outputs:
+ *  - Inputs: None (reads DOM).
+ *  - Returns: Object containing sectionSettings, products, and assetUrls.
+ */
+const loadShopifyData = () => {
+  const dataElement = document.getElementById('bundle-builder-data');
+  if (dataElement) {
+    try {
+      const parsedData = JSON.parse(dataElement.textContent);
+      if (parsedData) {
+        const products = Array.isArray(parsedData.products) && parsedData.products.length > 0
+          ? parsedData.products.map(p => ({ ...p }))
+          : (mockData.products || []).map(p => ({ ...p }));
+
+        return {
+          sectionSettings: {
+            ...(mockData.sectionSettings || {}),
+            ...(parsedData.sectionSettings || {})
+          },
+          products,
+          assetUrls: {
+            ...(mockData.assetUrls || {}),
+            ...(parsedData.assetUrls || {})
+          }
+        };
+      }
+    } catch (err) {
+      console.error("Error parsing Shopify product data", err);
+    }
+  }
+  return {
+    sectionSettings: { ...(mockData.sectionSettings || {}) },
+    products: (mockData.products || []).map(p => ({ ...p })),
+    assetUrls: { ...(mockData.assetUrls || {}) }
+  };
+};
+
+/**
+ * Goal: Build the initial default cart state matching the Figma preview across both mock data and real Shopify store data.
+ * Method: Inspects loaded products by category and assigns initial quantities to the first matching items.
+ * Inputs/Outputs:
+ *  - productList (Array): The list of available products.
+ *  - Returns: Object mapping `${productId}-${variantId}` to initial quantity.
+ */
+const buildInitialCart = (productList) => {
+  const initialCart = {};
+  if (!productList || productList.length === 0) return initialCart;
+
+  // Helper to add quantity for a product by index or title
+  const addInitialQty = (predicate, qty) => {
+    const prod = productList.find(predicate);
+    if (prod && prod.variants && prod.variants.length > 0) {
+      const variantId = prod.variants[0].id;
+      initialCart[`${prod.id}-${variantId}`] = qty;
+    }
+  };
+
+  // Pre-select items matching the Figma specification
+  addInitialQty(p => p.title?.includes('Cam v4') || p.category === 'Cameras', 1);
+  const cameras = productList.filter(p => p.category === 'Cameras');
+  if (cameras.length > 1) {
+    const secondCam = cameras[1];
+    if (secondCam.variants && secondCam.variants.length > 0) {
+      initialCart[`${secondCam.id}-${secondCam.variants[0].id}`] = 2;
+    }
+  }
+
+  addInitialQty(p => p.category === 'Plan', 1);
+  addInitialQty(p => p.category === 'Sensors' && p.title?.includes('Motion'), 2);
+  addInitialQty(p => p.category === 'Sensors' && p.title?.includes('Hub'), 1);
+  addInitialQty(p => p.category === 'Accessories', 2);
+
+  return initialCart;
+};
+
+/**
+ * Goal: Initialize cart state synchronously from localStorage or Figma pre-selection defaults.
+ * Method: Parses localStorage item 'bundle-builder-cart', verifies matching product IDs, or falls back to buildInitialCart.
+ * Inputs/Outputs:
+ *  - products (Array): The loaded products list.
+ *  - Returns: Object representing initial cart quantities.
+ */
+const loadInitialCartState = (products) => {
+  if (typeof window === 'undefined') return {};
+  try {
+    const savedCart = localStorage.getItem('bundle-builder-cart');
+    if (savedCart) {
+      const parsedCart = JSON.parse(savedCart);
+      const hasValidItems = Object.keys(parsedCart).some(key => {
+        const [productId] = key.split('-');
+        return products?.some(p => String(p.id) === String(productId));
+      });
+      if (hasValidItems) {
+        return parsedCart;
+      }
+    }
+  } catch (err) {
+    console.error("Error parsing saved cart data", err);
+  }
+  return buildInitialCart(products);
+};
+
+/**
  * Goal: Serve as the root container for the Bundle Builder React application.
  * Method: Parses initial data from the Shopify DOM script tag, manages the global cart state, and provides the layout.
  * Inputs/Outputs: None (Main component rendering the page structure).
  */
 const App = () => {
-  const [shopData, setShopData] = useState({ sectionSettings: {}, products: [] });
-  const [cartState, setCartState] = useState({});
+  const [shopData, setShopData] = useState(loadShopifyData);
+  const [cartState, setCartState] = useState(() => loadInitialCartState(shopData.products));
   const [activeStep, setActiveStep] = useState(1);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  /**
-   * Goal: Parse the dynamic Shopify bundle configuration data from the DOM script element.
-   * Method: Reads JSON content from document.getElementById('bundle-builder-data'), validates structure, and falls back to local products.json.
-   * Inputs/Outputs:
-   *  - Inputs: None (reads DOM).
-   *  - Returns: Object containing sectionSettings, products, and assetUrls.
-   */
-  const loadShopifyData = () => {
-    const dataElement = document.getElementById('bundle-builder-data');
-    if (dataElement) {
-      try {
-        const parsedData = JSON.parse(dataElement.textContent);
-        if (parsedData && Array.isArray(parsedData.products) && parsedData.products.length > 0) {
-          return parsedData;
-        }
-      } catch (err) {
-        console.error("Error parsing Shopify product data", err);
-      }
-    }
-    return mockData;
-  };
-
-  /**
-   * Goal: Build the initial default cart state matching the Figma preview across both mock data and real Shopify store data.
-   * Method: Inspects loaded products by category and assigns initial quantities to the first matching items.
-   * Inputs/Outputs:
-   *  - productList (Array): The list of available products.
-   *  - Returns: Object mapping `${productId}-${variantId}` to initial quantity.
-   */
-  const buildInitialCart = (productList) => {
-    const initialCart = {};
-    if (!productList || productList.length === 0) return initialCart;
-
-    // Helper to add quantity for a product by index or title
-    const addInitialQty = (predicate, qty) => {
-      const prod = productList.find(predicate);
-      if (prod && prod.variants && prod.variants.length > 0) {
-        const variantId = prod.variants[0].id;
-        initialCart[`${prod.id}-${variantId}`] = qty;
-      }
-    };
-
-    // Pre-select items matching the Figma specification
-    addInitialQty(p => p.title?.includes('Cam v4') || p.category === 'Cameras', 1);
-    const cameras = productList.filter(p => p.category === 'Cameras');
-    if (cameras.length > 1) {
-      const secondCam = cameras[1];
-      if (secondCam.variants && secondCam.variants.length > 0) {
-        initialCart[`${secondCam.id}-${secondCam.variants[0].id}`] = 2;
-      }
-    }
-
-    addInitialQty(p => p.category === 'Plan', 1);
-    addInitialQty(p => p.category === 'Sensors' && p.title?.includes('Motion'), 2);
-    addInitialQty(p => p.category === 'Sensors' && p.title?.includes('Hub'), 1);
-    addInitialQty(p => p.category === 'Accessories', 2);
-
-    return initialCart;
-  };
 
   useEffect(() => {
-    const initialData = loadShopifyData();
-    setShopData(initialData);
-
-    const savedCart = localStorage.getItem('bundle-builder-cart');
-    if (savedCart) {
-      try {
-        const parsedCart = JSON.parse(savedCart);
-        // Ensure saved cart keys belong to current product list
-        const hasValidItems = Object.keys(parsedCart).some(key => {
-          const [productId] = key.split('-');
-          return initialData.products?.some(p => String(p.id) === String(productId));
-        });
-
-        if (hasValidItems) {
-          setCartState(parsedCart);
-        } else {
-          setCartState(buildInitialCart(initialData.products));
-        }
-      } catch (err) {
-        console.error("Error parsing saved cart data", err);
-        setCartState(buildInitialCart(initialData.products));
-      }
-    } else {
-      setCartState(buildInitialCart(initialData.products));
-    }
-    
-    setIsLoaded(true);
-
     /**
      * Goal: Re-sync product data dynamically if Shopify Theme Editor triggers a section load.
-     * Method: Attaches event listener to window/document for shopify:section:load and reloads shopData.
+     * Method: Attaches event listener to window/document for shopify:section:load and reloads shopData with functional immutable state setter.
      * Inputs/Outputs: CustomEvent -> updates shopData state.
      */
     const handleSectionLoad = () => {
       const refreshedData = loadShopifyData();
-      setShopData(refreshedData);
+      setShopData(prev => ({
+        ...prev,
+        sectionSettings: { ...refreshedData.sectionSettings },
+        products: refreshedData.products,
+        assetUrls: { ...refreshedData.assetUrls }
+      }));
     };
 
     document.addEventListener('shopify:section:load', handleSectionLoad);
@@ -189,11 +210,43 @@ const App = () => {
     alert("Your system has been saved for later!");
   };
 
-  if (!isLoaded) return <div>Loading Bundle Builder...</div>;
+  const s = shopData.sectionSettings || {};
+  const customStyles = {
+    '--section-heading-align': s.heading_alignment || 'center',
+    '--section-heading-size': s.heading_size ? `${s.heading_size}px` : '32px',
+    '--section-heading-color': s.heading_color || '#1F1F1F',
+    '--section-heading-margin-bottom': s.heading_margin_bottom !== undefined ? `${s.heading_margin_bottom}px` : '32px',
+
+    '--step-title-font-family': s.step_title_font_family ? `'${s.step_title_font_family}', sans-serif` : "'Gilroy-semibold', sans-serif",
+    '--step-title-font-size': s.step_title_font_size ? `${s.step_title_font_size}px` : '18px',
+    '--step-title-color': s.step_title_color || '#0B0D10',
+    '--step-header-padding-y': s.step_header_padding_y ? `${s.step_header_padding_y}px` : '0px',
+
+    '--selected-count-font-family': s.selected_count_font_family ? `'${s.selected_count_font_family}', sans-serif` : "'Gilroy-Medium', sans-serif",
+    '--selected-count-font-size': s.selected_count_font_size ? `${s.selected_count_font_size}px` : '14px',
+    '--selected-count-color': s.selected_count_color || '#4E2FD2',
+
+    '--card-bg-color': s.card_bg_color || 'var(--white)',
+    '--card-border-color': s.card_border_color || '#CED6DE',
+    '--card-selected-border-color': s.card_selected_border_color || '#4E2FD2',
+    '--card-padding': s.card_padding ? `${s.card_padding}px` : '16px',
+    '--card-border-radius': s.card_border_radius !== undefined ? `${s.card_border_radius}px` : '12px',
+
+    '--card-image-width': s.card_image_width ? `${s.card_image_width}px` : '120px',
+    '--card-image-height': s.card_image_height ? `${s.card_image_height}px` : '120px',
+    '--card-image-offset-y': s.card_image_offset_y !== undefined ? `${s.card_image_offset_y}px` : '0px',
+    '--card-image-padding': s.card_image_padding !== undefined ? `${s.card_image_padding}px` : '0px',
+
+    '--card-title-font-family': s.card_title_font_family ? `'${s.card_title_font_family}', sans-serif` : "'Gilroy-Bold', sans-serif",
+    '--card-title-font-size': s.card_title_font_size ? `${s.card_title_font_size}px` : '16px',
+    '--card-title-color': s.card_title_color || 'var(--text-dark)',
+    '--card-desc-font-size': s.card_desc_font_size ? `${s.card_desc_font_size}px` : '12px',
+    '--card-desc-color': s.card_desc_color || '#6F7882'
+  };
 
   return (
-    <div className="bundle-builder-container">
-      <h1 className="section-title">{shopData.sectionSettings?.heading || "Let's get started!"}</h1>
+    <div className="bundle-builder-container" style={customStyles}>
+      <h1 className="section-title">{s.heading || "Let's get started!"}</h1>
       
       <div className="bundle-builder-grid">
         <div className="left-column">
@@ -204,6 +257,7 @@ const App = () => {
             setActiveStep={setActiveStep}
             onQuantityChange={handleQuantityChange}
             assetUrls={shopData.assetUrls}
+            sectionSettings={shopData.sectionSettings}
           />
         </div>
         

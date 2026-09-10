@@ -35,6 +35,15 @@ const StepCard = ({ product, cartState, onQuantityChange, assetUrls = {} }) => {
     : quantity;
   const isSelected = totalProductQty > 0;
 
+  // Compute card-level overrides from Shopify product block settings
+  const cardCustomStyles = {};
+  if (product.imageOffsetY !== undefined && product.imageOffsetY !== 0) {
+    cardCustomStyles['--card-image-offset-y'] = `${product.imageOffsetY}px`;
+  }
+  if (product.imagePadding !== undefined && product.imagePadding !== 0) {
+    cardCustomStyles['--card-image-padding'] = `${product.imagePadding}px`;
+  }
+
   /**
    * Goal: Handle quantity updates for this specific product variant.
    * Method: Calls the global handler with the calculated new quantity ensuring it doesn't drop below 0.
@@ -51,6 +60,7 @@ const StepCard = ({ product, cartState, onQuantityChange, assetUrls = {} }) => {
   return (
     <div 
       className={`step-card ${isSelected ? 'selected' : ''}`}
+      style={cardCustomStyles}
       data-shopify-editor-block={product.blockId ? JSON.stringify({ id: product.blockId }) : undefined}
     >
       {/* Product Image & Optional Discount Badge */}

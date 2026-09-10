@@ -13,7 +13,7 @@ import { CameraIcon, PlanIcon, SensorsIcon, ProtectionIcon, AccordionArrow } fro
  *  - onQuantityChange (Function): Handler for quantity updates.
  *  - Returns: JSX Element
  */
-const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQuantityChange, assetUrls = {} }) => {
+const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQuantityChange, assetUrls = {}, sectionSettings = {} }) => {
   const steps = [
     { id: 1, title: 'Choose your cameras', category: 'Cameras', Icon: CameraIcon },
     { id: 2, title: 'Choose your plan', category: 'Plan', Icon: PlanIcon },
@@ -81,6 +81,7 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
                       cartState={cartState}
                       onQuantityChange={onQuantityChange}
                       assetUrls={assetUrls}
+                      sectionSettings={sectionSettings}
                     />
                   ))}
                   {stepProducts.length === 0 && <p>No products available in this category.</p>}
