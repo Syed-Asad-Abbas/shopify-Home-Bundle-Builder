@@ -40,8 +40,6 @@
             if block.settings.custom_compare_at_price != blank
               assign compare_at_price = block.settings.custom_compare_at_price | times: 100 | round
             endif
-            assign image_offset_y = block.settings.custom_image_offset_y | default: 0
-            assign image_padding = block.settings.custom_image_padding | default: 0
           -%}
           {
             "id": {{ product.id | json }},
@@ -59,8 +57,7 @@
               {% endfor %}
             ],
             "category": {{ block.settings.category | json }},
-            "imageOffsetY": {{ image_offset_y | json }},
-            "imagePadding": {{ image_padding | json }}
+            "blockSettings": {{ block.settings | json }}
           }
           {% assign first = false %}
         {% endif %}
@@ -152,9 +149,18 @@
       "id": "heading_alignment",
       "label": "Heading Alignment",
       "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "right", "label": "Right" }
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
       ],
       "default": "center"
     },
@@ -193,10 +199,22 @@
       "id": "step_title_font_family",
       "label": "Step Title Font Family",
       "options": [
-        { "value": "Gilroy-semibold", "label": "Gilroy SemiBold" },
-        { "value": "Gilroy-Bold", "label": "Gilroy Bold" },
-        { "value": "Gilroy-Medium", "label": "Gilroy Medium" },
-        { "value": "Gilroy-Regular", "label": "Gilroy Regular" }
+        {
+          "value": "Gilroy-semibold",
+          "label": "Gilroy SemiBold"
+        },
+        {
+          "value": "Gilroy-Bold",
+          "label": "Gilroy Bold"
+        },
+        {
+          "value": "Gilroy-Medium",
+          "label": "Gilroy Medium"
+        },
+        {
+          "value": "Gilroy-Regular",
+          "label": "Gilroy Regular"
+        }
       ],
       "default": "Gilroy-semibold"
     },
@@ -251,119 +269,158 @@
       "id": "selected_count_font_family",
       "label": "Selected Count Font Family",
       "options": [
-        { "value": "Gilroy-Medium", "label": "Gilroy Medium" },
-        { "value": "Gilroy-Bold", "label": "Gilroy Bold" },
-        { "value": "Gilroy-Regular", "label": "Gilroy Regular" }
+        {
+          "value": "Gilroy-Medium",
+          "label": "Gilroy Medium"
+        },
+        {
+          "value": "Gilroy-Bold",
+          "label": "Gilroy Bold"
+        },
+        {
+          "value": "Gilroy-Regular",
+          "label": "Gilroy Regular"
+        }
       ],
       "default": "Gilroy-Medium"
     },
     {
       "type": "header",
-      "content": "Product Card Settings"
+      "content": "Accordion Text Settings"
     },
     {
-      "type": "color",
-      "id": "card_bg_color",
-      "label": "Card Background Color",
-      "default": "#FFFFFF"
+      "type": "text",
+      "id": "step_1_title",
+      "label": "Step 1 Title",
+      "default": "Choose your cameras"
     },
     {
-      "type": "color",
-      "id": "card_border_color",
-      "label": "Card Border Color (Unselected)",
-      "default": "#CED6DE"
+      "type": "text",
+      "id": "step_2_title",
+      "label": "Step 2 Title",
+      "default": "Choose your plan"
     },
     {
-      "type": "color",
-      "id": "card_selected_border_color",
-      "label": "Card Border Color (Selected)",
-      "default": "#4E2FD2"
+      "type": "text",
+      "id": "step_3_title",
+      "label": "Step 3 Title",
+      "default": "Choose your sensors"
     },
     {
-      "type": "range",
-      "id": "card_padding",
-      "label": "Card Padding",
-      "min": 8,
-      "max": 32,
-      "step": 2,
-      "unit": "px",
-      "default": 16
+      "type": "text",
+      "id": "step_4_title",
+      "label": "Step 4 Title",
+      "default": "Add extra protection"
     },
     {
-      "type": "range",
-      "id": "card_border_radius",
-      "label": "Card Border Radius",
-      "min": 0,
-      "max": 24,
-      "step": 2,
-      "unit": "px",
-      "default": 12
+      "type": "text",
+      "id": "step_prefix_text",
+      "label": "Step Prefix Text",
+      "default": "STEP {id} OF 4"
     },
     {
-      "type": "header",
-      "content": "Product Image Placement & Size"
+      "type": "text",
+      "id": "next_button_prefix",
+      "label": "Next Button Prefix",
+      "default": "Next: "
     },
     {
-      "type": "range",
-      "id": "card_image_width",
-      "label": "Image Container Width",
-      "min": 80,
-      "max": 180,
-      "step": 5,
-      "unit": "px",
-      "default": 120
-    },
-    {
-      "type": "range",
-      "id": "card_image_height",
-      "label": "Image Container Height",
-      "min": 80,
-      "max": 180,
-      "step": 5,
-      "unit": "px",
-      "default": 120
-    },
-    {
-      "type": "range",
-      "id": "card_image_offset_y",
-      "label": "Image Vertical Offset (Move Up/Down)",
-      "min": -30,
-      "max": 30,
-      "step": 2,
-      "unit": "px",
-      "default": 0
-    },
-    {
-      "type": "range",
-      "id": "card_image_padding",
-      "label": "Image Inner Padding",
-      "min": 0,
-      "max": 20,
-      "step": 2,
-      "unit": "px",
-      "default": 0
+      "type": "text",
+      "id": "empty_category_text",
+      "label": "Empty Category Text",
+      "default": "No products available in this category."
     },
     {
       "type": "header",
-      "content": "Product Typography"
+      "content": "Review Panel Text Settings"
     },
     {
-      "type": "select",
-      "id": "card_title_font_family",
-      "label": "Product Title Font Family",
-      "options": [
-        { "value": "Gilroy-Bold", "label": "Gilroy Bold" },
-        { "value": "Gilroy-SemiBold", "label": "Gilroy SemiBold" },
-        { "value": "Gilroy-Medium", "label": "Gilroy Medium" },
-        { "value": "Gilroy-Regular", "label": "Gilroy Regular" }
-      ],
-      "default": "Gilroy-Bold"
+      "type": "text",
+      "id": "review_panel_title",
+      "label": "Review Panel Title",
+      "default": "Your security system"
+    },
+    {
+      "type": "textarea",
+      "id": "review_panel_subtitle",
+      "label": "Review Panel Subtitle",
+      "default": "Review your personalized protection system designed to keep what matters most safe."
+    },
+    {
+      "type": "text",
+      "id": "review_header_label",
+      "label": "Review Label",
+      "default": "REVIEW"
+    },
+    {
+      "type": "text",
+      "id": "plan_highlight_text",
+      "label": "Plan Highlight Text",
+      "default": "Unlimited"
+    },
+    {
+      "type": "text",
+      "id": "shipping_title",
+      "label": "Shipping Row Title",
+      "default": "Fast Shipping"
+    },
+    {
+      "type": "text",
+      "id": "shipping_price_text",
+      "label": "Shipping Price Text",
+      "default": "FREE"
+    },
+    {
+      "type": "text",
+      "id": "shipping_compare_text",
+      "label": "Shipping Compare Price Text",
+      "default": "$5.99"
+    },
+    {
+      "type": "text",
+      "id": "empty_cart_text",
+      "label": "Empty Bundle Text",
+      "default": "Your bundle is empty."
+    },
+    {
+      "type": "text",
+      "id": "financing_pill_text",
+      "label": "Financing Pill Text",
+      "default": "as low as $19.19/mo"
+    },
+    {
+      "type": "text",
+      "id": "savings_prefix_text",
+      "label": "Savings Prefix Text",
+      "default": "Congrats! You're saving $"
+    },
+    {
+      "type": "text",
+      "id": "savings_suffix_text",
+      "label": "Savings Suffix Text",
+      "default": " on your security bundle!"
+    },
+    {
+      "type": "text",
+      "id": "checkout_button_text",
+      "label": "Checkout Button Text",
+      "default": "Checkout"
+    },
+    {
+      "type": "text",
+      "id": "save_for_later_text",
+      "label": "Save for later link Text",
+      "default": "Save my system for later"
+    },
+    {
+      "type": "header",
+      "content": "Price Styling"
     },
     {
       "type": "range",
-      "id": "card_title_font_size",
-      "label": "Product Title Font Size",
-      "min": 13,
+      "id": "price_font_size",
+      "label": "Price Font Size",
+      "min": 10,
       "max": 24,
       "step": 1,
       "unit": "px",
@@ -371,25 +428,47 @@
     },
     {
       "type": "color",
-      "id": "card_title_color",
-      "label": "Product Title Color",
+      "id": "price_color",
+      "label": "Price Color",
       "default": "#1F1F1F"
     },
     {
-      "type": "range",
-      "id": "card_desc_font_size",
-      "label": "Description Font Size",
-      "min": 10,
-      "max": 18,
-      "step": 1,
-      "unit": "px",
-      "default": 12
+      "type": "color",
+      "id": "compare_price_color",
+      "label": "Compare-at Price Color",
+      "default": "#6F7882"
+    },
+    {
+      "type": "header",
+      "content": "Quantity Stepper Styling"
     },
     {
       "type": "color",
-      "id": "card_desc_color",
-      "label": "Description Color",
-      "default": "#6F7882"
+      "id": "stepper_bg",
+      "label": "Stepper Background",
+      "default": "#F4F5F7"
+    },
+    {
+      "type": "color",
+      "id": "stepper_text_color",
+      "label": "Stepper Text Color",
+      "default": "#1F1F1F"
+    },
+    {
+      "type": "color",
+      "id": "stepper_border_color",
+      "label": "Stepper Border Color",
+      "default": "#E4E7EC"
+    },
+    {
+      "type": "range",
+      "id": "stepper_border_radius",
+      "label": "Stepper Border Radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 6
     }
   ],
   "blocks": [
@@ -407,10 +486,22 @@
           "id": "category",
           "label": "Category / Step",
           "options": [
-            { "value": "Cameras", "label": "Cameras" },
-            { "value": "Plan", "label": "Plan" },
-            { "value": "Sensors", "label": "Sensors" },
-            { "value": "Accessories", "label": "Accessories" }
+            {
+              "value": "Cameras",
+              "label": "Cameras"
+            },
+            {
+              "value": "Plan",
+              "label": "Plan"
+            },
+            {
+              "value": "Sensors",
+              "label": "Sensors"
+            },
+            {
+              "value": "Accessories",
+              "label": "Accessories"
+            }
           ],
           "default": "Cameras"
         },
@@ -445,9 +536,71 @@
           "label": "Learn More URL (optional)"
         },
         {
+          "type": "header",
+          "content": "Card Styling"
+        },
+        {
+          "type": "color",
+          "id": "card_bg_color",
+          "label": "Card Background Color",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "color",
+          "id": "card_border_color",
+          "label": "Card Border Color (Unselected)",
+          "default": "#CED6DE"
+        },
+        {
+          "type": "color",
+          "id": "card_selected_border_color",
+          "label": "Card Border Color (Selected)",
+          "default": "#4E2FD2"
+        },
+        {
           "type": "range",
-          "id": "custom_image_offset_y",
-          "label": "Product Image Offset Y (Move Up/Down)",
+          "id": "card_padding",
+          "label": "Card Padding",
+          "min": 8,
+          "max": 32,
+          "step": 2,
+          "unit": "px",
+          "default": 16
+        },
+        {
+          "type": "range",
+          "id": "card_border_radius",
+          "label": "Card Border Radius",
+          "min": 0,
+          "max": 24,
+          "step": 2,
+          "unit": "px",
+          "default": 12
+        },
+        {
+          "type": "range",
+          "id": "card_image_width",
+          "label": "Image Container Width",
+          "min": 80,
+          "max": 180,
+          "step": 5,
+          "unit": "px",
+          "default": 120
+        },
+        {
+          "type": "range",
+          "id": "card_image_height",
+          "label": "Image Container Height",
+          "min": 80,
+          "max": 180,
+          "step": 5,
+          "unit": "px",
+          "default": 120
+        },
+        {
+          "type": "range",
+          "id": "card_image_offset_y",
+          "label": "Image Vertical Offset (Move Up/Down)",
           "min": -30,
           "max": 30,
           "step": 2,
@@ -456,13 +609,147 @@
         },
         {
           "type": "range",
-          "id": "custom_image_padding",
-          "label": "Product Image Inner Padding",
+          "id": "card_image_padding",
+          "label": "Image Inner Padding",
+          "min": 0,
+          "max": 20,
+          "step": 2,
+          "unit": "px",
+          "default": 0
+        },
+        {
+          "type": "select",
+          "id": "card_title_font_family",
+          "label": "Product Title Font Family",
+          "options": [
+            {
+              "value": "Gilroy-Bold",
+              "label": "Gilroy Bold"
+            },
+            {
+              "value": "Gilroy-SemiBold",
+              "label": "Gilroy SemiBold"
+            },
+            {
+              "value": "Gilroy-Medium",
+              "label": "Gilroy Medium"
+            },
+            {
+              "value": "Gilroy-Regular",
+              "label": "Gilroy Regular"
+            }
+          ],
+          "default": "Gilroy-Bold"
+        },
+        {
+          "type": "range",
+          "id": "card_title_font_size",
+          "label": "Product Title Font Size",
+          "min": 13,
+          "max": 24,
+          "step": 1,
+          "unit": "px",
+          "default": 16
+        },
+        {
+          "type": "color",
+          "id": "card_title_color",
+          "label": "Product Title Color",
+          "default": "#1F1F1F"
+        },
+        {
+          "type": "range",
+          "id": "card_desc_font_size",
+          "label": "Description Font Size",
+          "min": 10,
+          "max": 18,
+          "step": 1,
+          "unit": "px",
+          "default": 12
+        },
+        {
+          "type": "color",
+          "id": "card_desc_color",
+          "label": "Description Color",
+          "default": "#6F7882"
+        },
+        {
+          "type": "header",
+          "content": "Variant Styling"
+        },
+        {
+          "type": "color",
+          "id": "variant_text_color",
+          "label": "Variant Text Color",
+          "default": "#4A5568"
+        },
+        {
+          "type": "color",
+          "id": "variant_border_color",
+          "label": "Variant Border Color",
+          "default": "#E4E7EC"
+        },
+        {
+          "type": "color",
+          "id": "variant_active_border",
+          "label": "Variant Active Border Color",
+          "default": "#4E2FD2"
+        },
+        {
+          "type": "color",
+          "id": "variant_active_bg",
+          "label": "Variant Active Background",
+          "default": "#EFEAFC"
+        },
+        {
+          "type": "range",
+          "id": "variant_image_size",
+          "label": "Variant Image Size",
+          "min": 8,
+          "max": 32,
+          "step": 2,
+          "unit": "px",
+          "default": 16
+        },
+        {
+          "type": "range",
+          "id": "variant_padding_x",
+          "label": "Variant Container Padding X",
+          "min": 0,
+          "max": 20,
+          "step": 2,
+          "unit": "px",
+          "default": 10
+        },
+        {
+          "type": "range",
+          "id": "variant_padding_y",
+          "label": "Variant Container Padding Y",
+          "min": 0,
+          "max": 20,
+          "step": 2,
+          "unit": "px",
+          "default": 4
+        },
+        {
+          "type": "range",
+          "id": "variant_border_radius",
+          "label": "Variant Container Border Radius",
           "min": 0,
           "max": 24,
           "step": 2,
           "unit": "px",
-          "default": 0
+          "default": 6
+        },
+        {
+          "type": "range",
+          "id": "variant_text_size",
+          "label": "Variant Text Font Size",
+          "min": 10,
+          "max": 18,
+          "step": 1,
+          "unit": "px",
+          "default": 12
         }
       ]
     }

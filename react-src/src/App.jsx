@@ -192,10 +192,10 @@ const App = () => {
 
   const s = shopData.sectionSettings || {};
   const customStyles = {
-    '--section-heading-align': s.heading_alignment || 'center',
     '--section-heading-size': s.heading_size ? `${s.heading_size}px` : '32px',
+    '--section-heading-align': s.heading_alignment || 'center',
     '--section-heading-color': s.heading_color || '#1F1F1F',
-    '--section-heading-margin-bottom': s.heading_margin_bottom !== undefined ? `${s.heading_margin_bottom}px` : '32px',
+    '--section-heading-margin-bottom': s.heading_margin_bottom ? `${s.heading_margin_bottom}px` : '32px',
 
     '--step-title-font-family': s.step_title_font_family ? `'${s.step_title_font_family}', sans-serif` : "'Gilroy-semibold', sans-serif",
     '--step-title-font-size': s.step_title_font_size ? `${s.step_title_font_size}px` : '18px',
@@ -206,22 +206,14 @@ const App = () => {
     '--selected-count-font-size': s.selected_count_font_size ? `${s.selected_count_font_size}px` : '14px',
     '--selected-count-color': s.selected_count_color || '#4E2FD2',
 
-    '--card-bg-color': s.card_bg_color || 'var(--white)',
-    '--card-border-color': s.card_border_color || '#CED6DE',
-    '--card-selected-border-color': s.card_selected_border_color || '#4E2FD2',
-    '--card-padding': s.card_padding ? `${s.card_padding}px` : '16px',
-    '--card-border-radius': s.card_border_radius !== undefined ? `${s.card_border_radius}px` : '12px',
+    '--price-font-size': s.price_font_size ? `${s.price_font_size}px` : '16px',
+    '--price-color': s.price_color || '#1F1F1F',
+    '--compare-price-color': s.compare_price_color || '#6F7882',
 
-    '--card-image-width': s.card_image_width ? `${s.card_image_width}px` : '120px',
-    '--card-image-height': s.card_image_height ? `${s.card_image_height}px` : '120px',
-    '--card-image-offset-y': s.card_image_offset_y !== undefined ? `${s.card_image_offset_y}px` : '0px',
-    '--card-image-padding': s.card_image_padding !== undefined ? `${s.card_image_padding}px` : '0px',
-
-    '--card-title-font-family': s.card_title_font_family ? `'${s.card_title_font_family}', sans-serif` : "'Gilroy-Bold', sans-serif",
-    '--card-title-font-size': s.card_title_font_size ? `${s.card_title_font_size}px` : '16px',
-    '--card-title-color': s.card_title_color || 'var(--text-dark)',
-    '--card-desc-font-size': s.card_desc_font_size ? `${s.card_desc_font_size}px` : '12px',
-    '--card-desc-color': s.card_desc_color || '#6F7882'
+    '--stepper-bg': s.stepper_bg || '#F4F5F7',
+    '--stepper-text-color': s.stepper_text_color || '#1F1F1F',
+    '--stepper-border-color': s.stepper_border_color || '#E4E7EC',
+    '--stepper-border-radius': s.stepper_border_radius !== undefined ? `${s.stepper_border_radius}px` : '6px'
   };
 
   return (
@@ -248,6 +240,7 @@ const App = () => {
             onSaveForLater={handleSaveForLater}
             onQuantityChange={handleQuantityChange}
             assetUrls={shopData.assetUrls}
+            sectionSettings={shopData.sectionSettings}
           />
         </div>
       </div>

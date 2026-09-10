@@ -12,7 +12,8 @@ import { PlanIcon } from './Icons';
  *  - assetUrls (Object): Shopify dynamic asset URLs (e.g. satisfactionBadge).
  *  - Returns: JSX Element
  */
-const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, assetUrls = {} }) => {
+const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, assetUrls = {}, sectionSettings = {} }) => {
+  const s = sectionSettings || {};
   /**
    * Goal: Retrieve a product object by its ID.
    * Method: Searches the products array matching string IDs.
@@ -78,10 +79,10 @@ const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, as
 
   return (
     <div className="review-panel">
-      <div className="review-header-label">REVIEW</div>
+      <div className="review-header-label">{s.review_header_label || 'REVIEW'}</div>
       <div className="review-title-wrapper">
-        <div className="review-title">Your security system</div>
-        <div className="review-subtitle">Review your personalized protection system designed to keep what matters most safe.</div>
+        <div className="review-title">{s.review_panel_title || 'Your security system'}</div>
+        <div className="review-subtitle">{s.review_panel_subtitle || 'Review your personalized protection system designed to keep what matters most safe.'}</div>
       </div>
 
       <div className="review-items">
@@ -102,7 +103,7 @@ const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, as
                       <div className="review-plan-left">
                         <PlanIcon className="plan-icon" />
                         <span className="plan-title">
-                          Cam <span className="plan-title-highlight">Unlimited</span>
+                          Cam <span className="plan-title-highlight">{s.plan_highlight_text || 'Unlimited'}</span>
                         </span>
                       </div>
                       <div className="review-price">
@@ -145,7 +146,7 @@ const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, as
                         </span>
                       )}
                       <span className="active-price">
-                        {item.price === 0 ? 'FREE' : `$${((item.price * item.quantity) / 100).toFixed(2)}`}
+                        {item.price === 0 ? (s.shipping_price_text || 'FREE') : `$${((item.price * item.quantity) / 100).toFixed(2)}`}
                       </span>
                     </div>
                   </div>
@@ -170,17 +171,17 @@ const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, as
                 </svg>
               </div>
               <div className="review-details">
-                <h4>Fast Shipping</h4>
+                <h4>{s.shipping_title || 'Fast Shipping'}</h4>
               </div>
               <div className="review-price">
-                <span className="compare-price">$5.99</span>
-                <span className="active-price">FREE</span>
+                <span className="compare-price">{s.shipping_compare_text || '$5.99'}</span>
+                <span className="active-price">{s.shipping_price_text || 'FREE'}</span>
               </div>
             </div>
           </div>
         )}
 
-        {cartItems.length === 0 && <p className="empty-cart-msg">Your bundle is empty.</p>}
+        {cartItems.length === 0 && <p className="empty-cart-msg">{s.empty_cart_text || 'Your bundle is empty.'}</p>}
       </div>
 
       {/* Guarantee Badge & Pricing Block */}
@@ -196,7 +197,7 @@ const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, as
 
         <div className="totals-section">
           <div className="financing-pill">
-            <span className="financing-pill-text">as low as $19.19/mo</span>
+            <span className="financing-pill-text">{s.financing_pill_text || 'as low as $19.19/mo'}</span>
           </div>
           <div className="totals-row">
             <span className="compare-price strikethrough">${compareAtTotal}</span>
@@ -208,18 +209,18 @@ const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, as
       {/* Savings Callout */}
       {savings > 0 && (
         <div className="savings-callout">
-          Congrats! You're saving ${savings} on your security bundle!
+          {s.savings_prefix_text || "Congrats! You're saving $"}{savings}{s.savings_suffix_text || " on your security bundle!"}
         </div>
       )}
 
       {/* Checkout Button */}
-      <button className="btn btn-checkout" onClick={handleCheckout}>
-        Checkout
+      <button type="button" className="btn btn-checkout" onClick={handleCheckout}>
+        {s.checkout_button_text || 'Checkout'}
       </button>
       
       {/* Save for later link */}
-      <button className="save-later-link" onClick={onSaveForLater}>
-        Save my system for later
+      <button type="button" className="save-later-link" onClick={onSaveForLater}>
+        {s.save_for_later_text || 'Save my system for later'}
       </button>
     </div>
   );

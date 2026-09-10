@@ -63,8 +63,14 @@ body {
   letter-spacing: -0.06px;
   text-align: var(--section-heading-align, center);
   color: var(--section-heading-color, #1F1F1F);
-  display: block;
+  display: none; /* Hidden on desktop by default */
   margin: 0 auto var(--section-heading-margin-bottom, 32px);
+}
+
+@media (max-width: 768px) {
+  .section-title {
+    display: block; /* Visible on mobile */
+  }
 }
 
 /* Accordion Step Item Wrapper */
@@ -231,13 +237,13 @@ body {
 
 .discount-badge {
   position: absolute;
-  top: -6px;
-  left: -6px;
+  top: -20px;
+  left: 0px;
   background-color: #4E2FD2;
   color: var(--white);
   font-family: 'Gilroy-Bold', sans-serif;
-  font-size: 11px;
-  padding: 3px 8px;
+  font-size: 10px;
+  padding: 2px 6px;
   border-radius: 12px;
   text-transform: none;
   letter-spacing: 0.2px;
@@ -312,13 +318,13 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  border: 1px solid #CED6DE;
-  border-radius: 6px;
+  padding: var(--variant-padding-y, 4px) var(--variant-padding-x, 10px);
+  border: 1px solid var(--variant-border-color, #CED6DE);
+  border-radius: var(--variant-border-radius, 6px);
   background: #FFFFFF;
   font-family: 'Gilroy-Medium', sans-serif;
-  font-size: 12px;
-  color: #1F1F1F;
+  font-size: var(--variant-text-size, 12px);
+  color: var(--variant-text-color, #1F1F1F);
   cursor: pointer;
   transition: all 0.2s ease;
   line-height: 1;
@@ -329,22 +335,22 @@ body {
 }
 
 .variant-btn.active {
-  border: 1.5px solid #00A88F;
-  background-color: #F0FDF4;
+  border: 1.5px solid var(--variant-active-border, #00A88F);
+  background-color: var(--variant-active-bg, #F0FDF4);
   color: #0B0D10;
   font-weight: 600;
 }
 
 .variant-swatch-img {
-  width: 16px;
-  height: 16px;
+  width: var(--variant-image-size, 16px);
+  height: var(--variant-image-size, 16px);
   object-fit: contain;
   flex-shrink: 0;
 }
 
 .variant-swatch-dot {
-  width: 10px;
-  height: 10px;
+  width: calc(var(--variant-image-size, 16px) * 0.625);
+  height: calc(var(--variant-image-size, 16px) * 0.625);
   border-radius: 50%;
   border: 1px solid #D0D5DD;
   display: inline-block;
@@ -373,10 +379,10 @@ body {
 .stepper-btn {
   width: 24px;
   height: 24px;
-  border: 1px solid #CED6DE;
-  border-radius: 4px;
-  background: #FFFFFF;
-  color: #1F1F1F;
+  border: 1px solid var(--stepper-border-color, #CED6DE);
+  border-radius: var(--stepper-border-radius, 4px);
+  background: var(--stepper-bg, #FFFFFF);
+  color: var(--stepper-text-color, #1F1F1F);
   font-size: 14px;
   font-family: 'Gilroy-Bold', sans-serif;
   display: flex;
@@ -400,7 +406,7 @@ body {
   padding: 0 4px;
   font-family: 'Gilroy-Bold', sans-serif;
   font-size: 14px;
-  color: #1F1F1F;
+  color: var(--stepper-text-color, #1F1F1F);
   min-width: 14px;
   text-align: center;
 }
@@ -415,8 +421,8 @@ body {
 
 .price-container .compare-price {
   font-family: 'Gilroy-Medium', sans-serif;
-  font-size: 12px;
-  color: #E04F44;
+  font-size: calc(var(--price-font-size, 16px) * 0.75);
+  color: var(--compare-price-color, #E04F44);
   text-decoration: line-through;
   line-height: 1.1;
   margin-bottom: 2px;
@@ -424,8 +430,8 @@ body {
 
 .price-container .active-price {
   font-family: 'Gilroy-Bold', sans-serif;
-  font-size: 16px;
-  color: #1F1F1F;
+  font-size: var(--price-font-size, 16px);
+  color: var(--price-color, #1F1F1F);
   line-height: 1.1;
 }
 
@@ -857,8 +863,8 @@ body {
   }
 
   .discount-badge {
-    top: -4px;
-    left: -4px;
+    top: -20px;
+    left: 0px;
     font-size: 10px;
     padding: 2px 6px;
   }

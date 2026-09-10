@@ -14,11 +14,12 @@ import { CameraIcon, PlanIcon, SensorsIcon, ProtectionIcon, AccordionArrow } fro
  *  - Returns: JSX Element
  */
 const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQuantityChange, assetUrls = {}, sectionSettings = {} }) => {
+  const s = sectionSettings || {};
   const steps = [
-    { id: 1, title: 'Choose your cameras', category: 'Cameras', Icon: CameraIcon },
-    { id: 2, title: 'Choose your plan', category: 'Plan', Icon: PlanIcon },
-    { id: 3, title: 'Choose your sensors', category: 'Sensors', Icon: SensorsIcon },
-    { id: 4, title: 'Add extra protection', category: 'Accessories', Icon: ProtectionIcon },
+    { id: 1, title: s.step_1_title || 'Choose your cameras', category: 'Cameras', Icon: CameraIcon },
+    { id: 2, title: s.step_2_title || 'Choose your plan', category: 'Plan', Icon: PlanIcon },
+    { id: 3, title: s.step_3_title || 'Choose your sensors', category: 'Sensors', Icon: SensorsIcon },
+    { id: 4, title: s.step_4_title || 'Add extra protection', category: 'Accessories', Icon: ProtectionIcon },
   ];
 
   /**
@@ -54,7 +55,7 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
         return (
           <div key={step.id} className="item-wrapper">
             <div className="accordion-title-row">
-              <span>STEP {step.id} OF 4</span>
+              <span>{(s.step_prefix_text || 'STEP {id} OF 4').replace('{id}', step.id)}</span>
             </div>
             <div className={`accordion-step ${isOpen ? 'open' : 'closed'}`}>
               <div 
@@ -71,8 +72,7 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
                 </div>
               </div>
 
-            {isOpen && (
-              <div className="accordion-body">
+              <div className="accordion-body" style={{ display: isOpen ? 'block' : 'none' }}>
                 <div className="product-grid">
                   {stepProducts.map(product => (
                     <StepCard 
@@ -84,19 +84,19 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
                       sectionSettings={sectionSettings}
                     />
                   ))}
-                  {stepProducts.length === 0 && <p>No products available in this category.</p>}
+                  {stepProducts.length === 0 && <p>{s.empty_category_text || 'No products available in this category.'}</p>}
                 </div>
                 
                 {step.id < 4 && (
                   <button 
+                    type="button"
                     className="btn btn-outline next-step-btn"
                     onClick={() => setActiveStep(step.id + 1)}
                   >
-                    Next: {steps[step.id]?.title}
+                    {s.next_button_prefix || 'Next: '}{steps[step.id]?.title}
                   </button>
                 )}
               </div>
-            )}
           </div>
         </div>
         );

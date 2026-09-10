@@ -10282,9 +10282,40 @@ var StepCard = ({ product, cartState, onQuantityChange, assetUrls = {} }) => {
 	const displayBadge = product.badgeText || (hasDiscount ? `Save ${discountPercent}%` : null);
 	const cardImage = activeVariant?.featured_image?.src || activeVariant?.image || product.images?.[0];
 	const isSelected = (product.variants && product.variants.length > 0 ? product.variants.reduce((sum, v) => sum + (cartState[`${product.id}-${v.id}`] || 0), 0) : quantity) > 0;
-	const cardCustomStyles = {};
-	if (product.imageOffsetY !== void 0 && product.imageOffsetY !== 0) cardCustomStyles["--card-image-offset-y"] = `${product.imageOffsetY}px`;
-	if (product.imagePadding !== void 0 && product.imagePadding !== 0) cardCustomStyles["--card-image-padding"] = `${product.imagePadding}px`;
+	const getPx = (val, fallback) => {
+		if (val === null || val === void 0 || val === "") return fallback;
+		return `${val}px`;
+	};
+	const getColor = (val, fallback) => {
+		if (!val || val === "rgba(0,0,0,0)" || val === "transparent" || val.trim() === "") return fallback;
+		return val;
+	};
+	const s = product.blockSettings || {};
+	const cardCustomStyles = {
+		"--card-bg-color": getColor(s.card_bg_color, "var(--white)"),
+		"--card-border-color": getColor(s.card_border_color, "#CED6DE"),
+		"--card-selected-border-color": getColor(s.card_selected_border_color, "#4E2FD2"),
+		"--card-padding": getPx(s.card_padding, "16px"),
+		"--card-border-radius": getPx(s.card_border_radius, "12px"),
+		"--card-image-width": getPx(s.card_image_width, "120px"),
+		"--card-image-height": getPx(s.card_image_height, "120px"),
+		"--card-image-offset-y": getPx(s.card_image_offset_y, "0px"),
+		"--card-image-padding": getPx(s.card_image_padding, "0px"),
+		"--card-title-font-family": s.card_title_font_family ? `'${s.card_title_font_family}', sans-serif` : "'Gilroy-Bold', sans-serif",
+		"--card-title-font-size": getPx(s.card_title_font_size, "16px"),
+		"--card-title-color": getColor(s.card_title_color, "var(--text-dark)"),
+		"--card-desc-font-size": getPx(s.card_desc_font_size, "12px"),
+		"--card-desc-color": getColor(s.card_desc_color, "#6F7882"),
+		"--variant-text-color": getColor(s.variant_text_color, "#4A5568"),
+		"--variant-border-color": getColor(s.variant_border_color, "#E4E7EC"),
+		"--variant-active-border": getColor(s.variant_active_border, "#4E2FD2"),
+		"--variant-active-bg": getColor(s.variant_active_bg, "#EFEAFC"),
+		"--variant-image-size": getPx(s.variant_image_size, "16px"),
+		"--variant-padding-x": getPx(s.variant_padding_x, "10px"),
+		"--variant-padding-y": getPx(s.variant_padding_y, "4px"),
+		"--variant-border-radius": getPx(s.variant_border_radius, "6px"),
+		"--variant-text-size": getPx(s.variant_text_size, "12px")
+	};
 	/**
 	* Goal: Handle quantity updates for this specific product variant.
 	* Method: Calls the global handler with the calculated new quantity ensuring it doesn't drop below 0.
@@ -10326,6 +10357,9 @@ var StepCard = ({ product, cartState, onQuantityChange, assetUrls = {} }) => {
 					className: "learn-more-link",
 					target: "_blank",
 					rel: "noreferrer",
+					onClick: (e) => {
+						if (typeof window !== "undefined" && window.Shopify && window.Shopify.designMode) e.preventDefault();
+					},
 					children: "Learn More"
 				}),
 				product.variants && product.variants.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(VariantSelector, {
@@ -10643,28 +10677,29 @@ var AccordionArrow = ({ isOpen = false, className = "" }) => /* @__PURE__ */ (0,
 *  - Returns: JSX Element
 */
 var AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQuantityChange, assetUrls = {}, sectionSettings = {} }) => {
+	const s = sectionSettings || {};
 	const steps = [
 		{
 			id: 1,
-			title: "Choose your cameras",
+			title: s.step_1_title || "Choose your cameras",
 			category: "Cameras",
 			Icon: CameraIcon
 		},
 		{
 			id: 2,
-			title: "Choose your plan",
+			title: s.step_2_title || "Choose your plan",
 			category: "Plan",
 			Icon: PlanIcon
 		},
 		{
 			id: 3,
-			title: "Choose your sensors",
+			title: s.step_3_title || "Choose your sensors",
 			category: "Sensors",
 			Icon: SensorsIcon
 		},
 		{
 			id: 4,
-			title: "Add extra protection",
+			title: s.step_4_title || "Add extra protection",
 			category: "Accessories",
 			Icon: ProtectionIcon
 		}
@@ -10693,11 +10728,7 @@ var AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQuan
 				className: "item-wrapper",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 					className: "accordion-title-row",
-					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
-						"STEP ",
-						step.id,
-						" OF 4"
-					] })
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: (s.step_prefix_text || "STEP {id} OF 4").replace("{id}", step.id) })
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 					className: `accordion-step ${isOpen ? "open" : "closed"}`,
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -10713,8 +10744,9 @@ var AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQuan
 								children: [selectedCount, " selected"]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AccordionArrow, { isOpen })]
 						})]
-					}), isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 						className: "accordion-body",
+						style: { display: isOpen ? "block" : "none" },
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 							className: "product-grid",
 							children: [stepProducts.map((product) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StepCard, {
@@ -10723,11 +10755,12 @@ var AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQuan
 								onQuantityChange,
 								assetUrls,
 								sectionSettings
-							}, product.id)), stepProducts.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "No products available in this category." })]
+							}, product.id)), stepProducts.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: s.empty_category_text || "No products available in this category." })]
 						}), step.id < 4 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+							type: "button",
 							className: "btn btn-outline next-step-btn",
 							onClick: () => setActiveStep(step.id + 1),
-							children: ["Next: ", steps[step.id]?.title]
+							children: [s.next_button_prefix || "Next: ", steps[step.id]?.title]
 						})]
 					})]
 				})]
@@ -10748,7 +10781,8 @@ var AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQuan
 *  - assetUrls (Object): Shopify dynamic asset URLs (e.g. satisfactionBadge).
 *  - Returns: JSX Element
 */
-var ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, assetUrls = {} }) => {
+var ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, assetUrls = {}, sectionSettings = {} }) => {
+	const s = sectionSettings || {};
 	/**
 	* Goal: Retrieve a product object by its ID.
 	* Method: Searches the products array matching string IDs.
@@ -10817,16 +10851,16 @@ var ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, asse
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				className: "review-header-label",
-				children: "REVIEW"
+				children: s.review_header_label || "REVIEW"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 				className: "review-title-wrapper",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 					className: "review-title",
-					children: "Your security system"
+					children: s.review_panel_title || "Your security system"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 					className: "review-subtitle",
-					children: "Review your personalized protection system designed to keep what matters most safe."
+					children: s.review_panel_subtitle || "Review your personalized protection system designed to keep what matters most safe."
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -10849,7 +10883,7 @@ var ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, asse
 											className: "plan-title",
 											children: ["Cam ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 												className: "plan-title-highlight",
-												children: "Unlimited"
+												children: s.plan_highlight_text || "Unlimited"
 											})]
 										})]
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -10910,7 +10944,7 @@ var ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, asse
 												children: ["$", (item.comparePrice * item.quantity / 100).toFixed(2)]
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 												className: "active-price",
-												children: item.price === 0 ? "FREE" : `$${(item.price * item.quantity / 100).toFixed(2)}`
+												children: item.price === 0 ? s.shipping_price_text || "FREE" : `$${(item.price * item.quantity / 100).toFixed(2)}`
 											})]
 										})
 									]
@@ -10970,16 +11004,16 @@ var ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, asse
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 									className: "review-details",
-									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: "Fast Shipping" })
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: s.shipping_title || "Fast Shipping" })
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 									className: "review-price",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 										className: "compare-price",
-										children: "$5.99"
+										children: s.shipping_compare_text || "$5.99"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 										className: "active-price",
-										children: "FREE"
+										children: s.shipping_price_text || "FREE"
 									})]
 								})
 							]
@@ -10987,7 +11021,7 @@ var ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, asse
 					}),
 					cartItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 						className: "empty-cart-msg",
-						children: "Your bundle is empty."
+						children: s.empty_cart_text || "Your bundle is empty."
 					})
 				]
 			}),
@@ -11009,7 +11043,7 @@ var ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, asse
 						className: "financing-pill",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 							className: "financing-pill-text",
-							children: "as low as $19.19/mo"
+							children: s.financing_pill_text || "as low as $19.19/mo"
 						})
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 						className: "totals-row",
@@ -11026,20 +11060,22 @@ var ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, asse
 			savings > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 				className: "savings-callout",
 				children: [
-					"Congrats! You're saving $",
+					s.savings_prefix_text || "Congrats! You're saving $",
 					savings,
-					" on your security bundle!"
+					s.savings_suffix_text || " on your security bundle!"
 				]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
 				className: "btn btn-checkout",
 				onClick: handleCheckout,
-				children: "Checkout"
+				children: s.checkout_button_text || "Checkout"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				type: "button",
 				className: "save-later-link",
 				onClick: onSaveForLater,
-				children: "Save my system for later"
+				children: s.save_for_later_text || "Save my system for later"
 			})
 		]
 	});
@@ -11388,10 +11424,10 @@ var App = () => {
 	};
 	const s = shopData.sectionSettings || {};
 	const customStyles = {
-		"--section-heading-align": s.heading_alignment || "center",
 		"--section-heading-size": s.heading_size ? `${s.heading_size}px` : "32px",
+		"--section-heading-align": s.heading_alignment || "center",
 		"--section-heading-color": s.heading_color || "#1F1F1F",
-		"--section-heading-margin-bottom": s.heading_margin_bottom !== void 0 ? `${s.heading_margin_bottom}px` : "32px",
+		"--section-heading-margin-bottom": s.heading_margin_bottom ? `${s.heading_margin_bottom}px` : "32px",
 		"--step-title-font-family": s.step_title_font_family ? `'${s.step_title_font_family}', sans-serif` : "'Gilroy-semibold', sans-serif",
 		"--step-title-font-size": s.step_title_font_size ? `${s.step_title_font_size}px` : "18px",
 		"--step-title-color": s.step_title_color || "#0B0D10",
@@ -11399,20 +11435,13 @@ var App = () => {
 		"--selected-count-font-family": s.selected_count_font_family ? `'${s.selected_count_font_family}', sans-serif` : "'Gilroy-Medium', sans-serif",
 		"--selected-count-font-size": s.selected_count_font_size ? `${s.selected_count_font_size}px` : "14px",
 		"--selected-count-color": s.selected_count_color || "#4E2FD2",
-		"--card-bg-color": s.card_bg_color || "var(--white)",
-		"--card-border-color": s.card_border_color || "#CED6DE",
-		"--card-selected-border-color": s.card_selected_border_color || "#4E2FD2",
-		"--card-padding": s.card_padding ? `${s.card_padding}px` : "16px",
-		"--card-border-radius": s.card_border_radius !== void 0 ? `${s.card_border_radius}px` : "12px",
-		"--card-image-width": s.card_image_width ? `${s.card_image_width}px` : "120px",
-		"--card-image-height": s.card_image_height ? `${s.card_image_height}px` : "120px",
-		"--card-image-offset-y": s.card_image_offset_y !== void 0 ? `${s.card_image_offset_y}px` : "0px",
-		"--card-image-padding": s.card_image_padding !== void 0 ? `${s.card_image_padding}px` : "0px",
-		"--card-title-font-family": s.card_title_font_family ? `'${s.card_title_font_family}', sans-serif` : "'Gilroy-Bold', sans-serif",
-		"--card-title-font-size": s.card_title_font_size ? `${s.card_title_font_size}px` : "16px",
-		"--card-title-color": s.card_title_color || "var(--text-dark)",
-		"--card-desc-font-size": s.card_desc_font_size ? `${s.card_desc_font_size}px` : "12px",
-		"--card-desc-color": s.card_desc_color || "#6F7882"
+		"--price-font-size": s.price_font_size ? `${s.price_font_size}px` : "16px",
+		"--price-color": s.price_color || "#1F1F1F",
+		"--compare-price-color": s.compare_price_color || "#6F7882",
+		"--stepper-bg": s.stepper_bg || "#F4F5F7",
+		"--stepper-text-color": s.stepper_text_color || "#1F1F1F",
+		"--stepper-border-color": s.stepper_border_color || "#E4E7EC",
+		"--stepper-border-radius": s.stepper_border_radius !== void 0 ? `${s.stepper_border_radius}px` : "6px"
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "bundle-builder-container",
@@ -11440,7 +11469,8 @@ var App = () => {
 					cartState,
 					onSaveForLater: handleSaveForLater,
 					onQuantityChange: handleQuantityChange,
-					assetUrls: shopData.assetUrls
+					assetUrls: shopData.assetUrls,
+					sectionSettings: shopData.sectionSettings
 				})
 			})]
 		})]
