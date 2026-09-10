@@ -203,6 +203,7 @@ const App = () => {
             activeStep={activeStep}
             setActiveStep={setActiveStep}
             onQuantityChange={handleQuantityChange}
+            assetUrls={shopData.assetUrls}
           />
         </div>
         

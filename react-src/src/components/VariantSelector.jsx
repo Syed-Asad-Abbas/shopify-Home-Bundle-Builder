@@ -1,14 +1,63 @@
 import React, { useState } from 'react';
 
 /**
- * Goal: Render a small thumbnail or color dot representing the variant.
- * Method: Attempts to load the miniature product variant image matching the product title and option color, falling back to an elegant CSS color swatch dot.
+ * Goal: Resolve a verified image URL for a given variant, avoiding speculative 404 network requests.
+ * Method: Checks if an image URL exists in the Shopify dynamic assetUrls dictionary, variant object, or known local dev files.
  * Inputs/Outputs:
  *  - productTitle (string): Parent product title (e.g., "Wyze Cam v4").
- *  - variantTitle (string): Option name (e.g., "White", "Grey", "Black").
+ *  - variantTitle (string): Variant title (e.g., "White", "Grey", "Black").
+ *  - variant (Object): The Shopify variant object.
+ *  - assetUrls (Object): Map of asset URLs from Liquid / shopData.
+ *  - Returns: string URL or null.
+ */
+const getVariantImageUrl = (productTitle = '', variantTitle = '', variant = {}, assetUrls = {}) => {
+  // 1. Check if Shopify variant object has a featured image URL
+  if (variant?.featured_image?.src) {
+    return variant.featured_image.src;
+  }
+  if (typeof variant?.image === 'string' && variant.image.length > 0) {
+    return variant.image;
+  }
+
+  const normalized = variantTitle.toLowerCase().trim();
+  const key = `${productTitle}-${normalized}`;
+
+  // 2. Check if Liquid injected a verified asset URL
+  if (assetUrls && assetUrls[key]) {
+    return assetUrls[key];
+  }
+
+  // 3. Fallback for local Vite dev only for verified files (preventing 404s on Shopify)
+  const isShopifyEnvironment = typeof window !== 'undefined' && (Boolean(window.Shopify) || window.location.port === '9292');
+  if (!isShopifyEnvironment) {
+    const verifiedLocalFiles = [
+      'Wyze Cam v4-white',
+      'Wyze Cam v4-grey',
+      'Wyze Cam v4-black',
+      'Wyze Cam Pan v3-white',
+      'Wyze Cam Pan v3-black',
+      'Wyze Cam Floodlight v2-black',
+      'Wyze Battery Cam Pro-black'
+    ];
+    if (verifiedLocalFiles.includes(key)) {
+      return `/${key}.png`;
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Goal: Render a small thumbnail or color dot representing the variant without triggering 404 errors.
+ * Method: Uses getVariantImageUrl to retrieve a verified image URL. If none is available, directly renders a CSS swatch dot.
+ * Inputs/Outputs:
+ *  - productTitle (string): Parent product title.
+ *  - variantTitle (string): Variant title.
+ *  - variant (Object): Variant data.
+ *  - assetUrls (Object): Dynamic asset URLs mapping.
  *  - Returns: JSX Element.
  */
-const VariantThumbnail = ({ productTitle = '', variantTitle = '' }) => {
+const VariantThumbnail = ({ productTitle = '', variantTitle = '', variant = {}, assetUrls = {} }) => {
   const [imgError, setImgError] = useState(false);
   const normalized = variantTitle.toLowerCase().trim();
 
@@ -23,12 +72,12 @@ const VariantThumbnail = ({ productTitle = '', variantTitle = '' }) => {
     border = '#000000';
   }
 
-  const imageSrc = `/${productTitle}-${normalized}.png`;
+  const imageUrl = getVariantImageUrl(productTitle, variantTitle, variant, assetUrls);
 
-  if (!imgError && productTitle) {
+  if (imageUrl && !imgError) {
     return (
       <img
-        src={imageSrc}
+        src={imageUrl}
         alt={variantTitle}
         className="variant-swatch-img"
         onError={() => setImgError(true)}
@@ -53,9 +102,10 @@ const VariantThumbnail = ({ productTitle = '', variantTitle = '' }) => {
  *  - activeVariant (Object): Currently selected variant.
  *  - setActiveVariant (Function): State updater function.
  *  - productTitle (string): Product title to resolve thumbnail imagery.
+ *  - assetUrls (Object): Dynamic asset URLs mapping.
  *  - Returns: JSX Element.
  */
-const VariantSelector = ({ variants = [], activeVariant, setActiveVariant, productTitle = '' }) => {
+const VariantSelector = ({ variants = [], activeVariant, setActiveVariant, productTitle = '', assetUrls = {} }) => {
   return (
     <div className="variant-selector" role="radiogroup" aria-label="Product variants">
       {variants.map((variant) => {
@@ -70,7 +120,12 @@ const VariantSelector = ({ variants = [], activeVariant, setActiveVariant, produ
             role="radio"
             aria-checked={isActive}
           >
-            <VariantThumbnail productTitle={productTitle} variantTitle={title} />
+            <VariantThumbnail 
+              productTitle={productTitle} 
+              variantTitle={title} 
+              variant={variant}
+              assetUrls={assetUrls}
+            />
             <span className="variant-btn-text">{title}</span>
           </button>
         );

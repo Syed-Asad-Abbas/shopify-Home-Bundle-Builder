@@ -10,7 +10,7 @@ import VariantSelector from './VariantSelector';
  *  - onQuantityChange (Function): Handler to update quantities.
  *  - Returns: JSX Element
  */
-const StepCard = ({ product, cartState, onQuantityChange }) => {
+const StepCard = ({ product, cartState, onQuantityChange, assetUrls = {} }) => {
   // Use the first variant as default active
   const [activeVariant, setActiveVariant] = useState(product.variants?.[0] || null);
 
@@ -82,6 +82,7 @@ const StepCard = ({ product, cartState, onQuantityChange }) => {
             activeVariant={activeVariant} 
             setActiveVariant={setActiveVariant} 
             productTitle={product.title}
+            assetUrls={assetUrls}
           />
         )}
         
