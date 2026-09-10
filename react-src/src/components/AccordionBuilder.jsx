@@ -1,6 +1,6 @@
 import React from 'react';
 import StepCard from './StepCard';
-import { CameraIcon, PlanIcon, SensorsIcon, ProtectionIcon } from './Icons';
+import { CameraIcon, PlanIcon, SensorsIcon, ProtectionIcon, AccordionArrow } from './Icons';
 
 /**
  * Goal: Render the multi-step accordion system on the left column.
@@ -67,9 +67,7 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
                 </div>
                 <div className="accordion-header-right">
                   {selectedCount > 0 && <span className="selected-text">{selectedCount} selected</span>}
-                  <div className={`accordion-arrow ${isOpen ? 'open' : ''}`}>
-                    <div className="polygon-1"></div>
-                  </div>
+                  <AccordionArrow isOpen={isOpen} />
                 </div>
               </div>
 

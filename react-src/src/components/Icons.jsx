@@ -95,3 +95,23 @@ export const ProtectionIcon = ({ className = 'step-icon' }) => (
     <path d="M18.9854 19.2283C18.9854 19.6319 18.825 20.0189 18.5397 20.3043C18.2543 20.5897 17.8672 20.75 17.4636 20.75H16.4497C16.0461 20.75 15.6591 20.5897 15.3737 20.3043C15.0883 20.0189 14.928 19.6319 14.928 19.2283C14.928 18.8247 15.0883 18.4376 15.3737 18.1523C15.6591 17.8669 16.0461 17.7065 16.4497 17.7065H17.4636C17.8672 17.7065 18.2543 17.8669 18.5397 18.1523C18.825 18.4376 18.9854 18.8247 18.9854 19.2283Z" stroke="#6F7882" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
+
+/**
+ * Goal: Render the accordion indicator arrow matching Figma specifications.
+ * Method: Inlines an SVG triangle pointing down, eliminating fragile CSS clip-path rendering across browsers.
+ * Inputs/Outputs: Accepts isOpen (boolean) and optional className; returns SVG element.
+ */
+export const AccordionArrow = ({ isOpen = false, className = '' }) => (
+  <svg 
+    className={`accordion-arrow ${isOpen ? 'open' : ''} ${className}`.trim()}
+    width="10" 
+    height="7" 
+    viewBox="0 0 10 7" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <path d="M0 0.5L10 0.5L5 6.5L0 0.5Z" fill="#4E2FD2"/>
+  </svg>
+);
+

@@ -170,27 +170,17 @@ body {
 }
 
 .accordion-arrow {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 7px;
   opacity: 1;
-  position: relative;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
   transition: transform 0.2s ease;
 }
 
 .accordion-arrow.open {
   transform: rotate(180deg);
-}
-
-.polygon-1 {
-  width: 10px;
-  height: 7px;
-  opacity: 1;
-  top: 3px;
-  left: 1px;
-  border-radius: 0.5px;
-  position: absolute;
-  background: #4E2FD2;
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
 .accordion-body {
