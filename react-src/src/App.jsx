@@ -148,6 +148,7 @@ const App = () => {
             cartState={cartState}
             onSaveForLater={handleSaveForLater}
             onQuantityChange={handleQuantityChange}
+            assetUrls={shopData.assetUrls}
           />
         </div>
       </div>

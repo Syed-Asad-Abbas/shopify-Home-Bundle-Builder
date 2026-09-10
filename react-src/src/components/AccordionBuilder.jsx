@@ -1,5 +1,6 @@
 import React from 'react';
 import StepCard from './StepCard';
+import { CameraIcon, PlanIcon, SensorsIcon, ProtectionIcon } from './Icons';
 
 /**
  * Goal: Render the multi-step accordion system on the left column.
@@ -14,10 +15,10 @@ import StepCard from './StepCard';
  */
 const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQuantityChange }) => {
   const steps = [
-    { id: 1, title: 'Choose your cameras', category: 'Cameras', icon: '/camera-icon.svg' },
-    { id: 2, title: 'Choose your plan', category: 'Plan', icon: '/plan-icon.svg' },
-    { id: 3, title: 'Choose your sensors', category: 'Sensors', icon: '/sensors-icons.svg' },
-    { id: 4, title: 'Add extra protection', category: 'Accessories', icon: '/protection-icon.svg' },
+    { id: 1, title: 'Choose your cameras', category: 'Cameras', Icon: CameraIcon },
+    { id: 2, title: 'Choose your plan', category: 'Plan', Icon: PlanIcon },
+    { id: 3, title: 'Choose your sensors', category: 'Sensors', Icon: SensorsIcon },
+    { id: 4, title: 'Add extra protection', category: 'Accessories', Icon: ProtectionIcon },
   ];
 
   /**
@@ -61,7 +62,7 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
                 onClick={() => setActiveStep(isOpen ? null : step.id)}
               >
                 <div className="accordion-header-left">
-                  <img src={step.icon} alt="" className="step-icon" />
+                  <step.Icon className="step-icon" />
                   <h2>{step.title}</h2>
                 </div>
                 <div className="accordion-header-right">

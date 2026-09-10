@@ -14,6 +14,9 @@
     "sectionSettings": {
       "heading": {{ section.settings.heading | json }}
     },
+    "assetUrls": {
+      "satisfactionBadge": {{ 'satisfaction-badge.png' | asset_url | json }}
+    },
     "products": [
       {% assign first = true %}
       {% for block in section.blocks %}
@@ -44,6 +47,7 @@
 {% comment %} 
   Load the compiled React assets (these are built by Vite)
 {% endcomment %}
+{{ 'bundle-builder.css' | asset_url | stylesheet_tag }}
 <style>
   @font-face {
     font-family: 'Gilroy-Bold';
@@ -87,9 +91,22 @@
     font-style: normal;
     font-display: swap;
   }
+  @font-face {
+    font-family: 'Gilroy-Light';
+    src: url("{{ 'Gilroy-Light.ttf' | asset_url }}") format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Gilroy-Heavy';
+    src: url("{{ 'Gilroy-Heavy.ttf' | asset_url }}") format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
 </style>
 <script src="{{ 'bundle-builder.js' | asset_url }}" defer="defer"></script>
-{{ 'bundle-builder.css' | asset_url | stylesheet_tag }}
 
 {% schema %}
 {

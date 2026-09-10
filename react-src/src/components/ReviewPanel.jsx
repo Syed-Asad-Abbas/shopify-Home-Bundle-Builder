@@ -1,4 +1,5 @@
 import React from 'react';
+import { PlanIcon } from './Icons';
 
 /**
  * Goal: Render the live summary review panel matching the Figma mobile specification.
@@ -8,9 +9,10 @@ import React from 'react';
  *  - cartState (Object): Selected items.
  *  - onSaveForLater (Function): Triggered to persist bundle state.
  *  - onQuantityChange (Function): Directly alter quantities from the review panel.
+ *  - assetUrls (Object): Shopify dynamic asset URLs (e.g. satisfactionBadge).
  *  - Returns: JSX Element
  */
-const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange }) => {
+const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, assetUrls = {} }) => {
   /**
    * Goal: Retrieve a product object by its ID.
    * Method: Searches the products array matching string IDs.
@@ -98,7 +100,7 @@ const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange }) 
                   return (
                     <div key={item.key} className="review-line-item plan-line-item">
                       <div className="review-plan-left">
-                        <img src="/plan-icon.svg" alt="" className="plan-icon" />
+                        <PlanIcon className="plan-icon" />
                         <span className="plan-title">
                           Cam <span className="plan-title-highlight">Unlimited</span>
                         </span>
@@ -185,9 +187,10 @@ const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange }) 
       <div className="review-summary-footer">
         <div className="guarantee-badge">
           <img 
-            src="/satisfaction-badge.png" 
+            src={assetUrls?.satisfactionBadge || '/satisfaction-badge.png'} 
             alt="100% Wyze satisfaction guarantee" 
             className="satisfaction-badge-img" 
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         </div>
 
