@@ -213,7 +213,8 @@ const App = () => {
     '--stepper-bg': s.stepper_bg || '#F4F5F7',
     '--stepper-text-color': s.stepper_text_color || '#1F1F1F',
     '--stepper-border-color': s.stepper_border_color || '#E4E7EC',
-    '--stepper-border-radius': s.stepper_border_radius !== undefined ? `${s.stepper_border_radius}px` : '6px'
+    '--stepper-border-radius': s.stepper_border_radius !== undefined ? `${s.stepper_border_radius}px` : '6px',
+    '--review-bg-color': s.review_bg_color || '#EDF4FF'
   };
 
   return (

@@ -1,11 +1,11 @@
-<div class="bundle-builder-section" id="bundle-builder-container">
-  {% comment %} 
-    Mount point for the React App 
+<div class="bundle-builder-section" id="bundle-builder-container" {{ section.shopify_attributes }}>
+  {% comment %}
+    Mount point for the React App
   {% endcomment %}
   <div id="react-bundle-builder-root"></div>
 </div>
 
-{% comment %} 
+{% comment %}
   Inject dynamic product data and customizer settings as JSON so the React app can read it on mount.
 {% endcomment %}
 <script type="application/json" id="bundle-builder-data">
@@ -57,6 +57,7 @@
               {% endfor %}
             ],
             "category": {{ block.settings.category | json }},
+            "shopifyAttributes": {{ block.shopify_attributes | json }},
             "blockSettings": {{ block.settings | json }}
           }
           {% assign first = false %}
@@ -66,7 +67,7 @@
   }
 </script>
 
-{% comment %} 
+{% comment %}
   Load the compiled React assets (these are built by Vite)
 {% endcomment %}
 {{ 'bundle-builder.css' | asset_url | stylesheet_tag }}
@@ -127,6 +128,20 @@
     font-style: normal;
     font-display: swap;
   }
+
+  #bundle-builder-container {
+    {% if section.settings.heading_font_family != blank %}--section-heading-font: {{ section.settings.heading_font_family }};{% endif %}
+    {% if section.settings.heading_font_weight != blank %}--section-heading-weight: {{ section.settings.heading_font_weight }};{% endif %}
+    {% if section.settings.heading_size != blank %}--section-heading-size: {{ section.settings.heading_size }}px;{% endif %}
+    {% if section.settings.heading_color != blank %}--section-heading-color: {{ section.settings.heading_color }};{% endif %}
+    {% if section.settings.heading_alignment != blank %}--section-heading-align: {{ section.settings.heading_alignment }};{% endif %}
+    {% if section.settings.heading_margin_bottom != blank %}--section-heading-margin-bottom: {{ section.settings.heading_margin_bottom }}px;{% endif %}
+
+    {% if section.settings.step_title_font_family != blank %}--step-title-font-family: '{{ section.settings.step_title_font_family }}', sans-serif;{% endif %}
+    {% if section.settings.step_title_font_size != blank %}--step-title-font-size: {{ section.settings.step_title_font_size }}px;{% endif %}
+    {% if section.settings.step_title_color != blank %}--step-title-color: {{ section.settings.step_title_color }};{% endif %}
+    {% if section.settings.step_header_padding_y != blank %}--step-header-padding-y: {{ section.settings.step_header_padding_y }}px;{% endif %}
+  }
 </style>
 <script src="{{ 'bundle-builder.js' | asset_url }}" defer="defer"></script>
 
@@ -134,6 +149,53 @@
 {
   "name": "Bundle Builder",
   "settings": [
+    {
+      "type": "header",
+      "content": "Global Settings"
+    },
+    {
+      "type": "select",
+      "id": "cart_display_style",
+      "label": "Cart Display Style",
+      "options": [
+        { "value": "fixed", "label": "Fixed Sidebar" },
+        { "value": "drawer", "label": "Slide-out Drawer" }
+      ],
+      "default": "fixed"
+    },
+    {
+      "type": "color",
+      "id": "section_bg_color",
+      "label": "Section Background Color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Product Card Settings"
+    },
+    {
+      "type": "select",
+      "id": "card_aspect_ratio",
+      "label": "Image Aspect Ratio",
+      "options": [
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "portrait", "label": "Portrait (3:4)" },
+        { "value": "landscape", "label": "Landscape (4:3)" }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_hover_image",
+      "label": "Show second image on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_status_badges",
+      "label": "Show product status badges (Sale / Sold Out)",
+      "default": true
+    },
     {
       "type": "header",
       "content": "Heading Settings"
@@ -163,6 +225,32 @@
         }
       ],
       "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "heading_font_family",
+      "label": "Heading Font Family",
+      "options": [
+        { "value": "'Gilroy-Regular', sans-serif", "label": "Gilroy Regular" },
+        { "value": "'Gilroy-Medium', sans-serif", "label": "Gilroy Medium" },
+        { "value": "'Gilroy-semibold', sans-serif", "label": "Gilroy SemiBold" },
+        { "value": "'Gilroy-Bold', sans-serif", "label": "Gilroy Bold" },
+        { "value": "'Gilroy-Heavy', sans-serif", "label": "Gilroy Heavy" }
+      ],
+      "default": "'Gilroy-Bold', sans-serif"
+    },
+    {
+      "type": "select",
+      "id": "heading_font_weight",
+      "label": "Heading Font Weight",
+      "options": [
+        { "value": "400", "label": "Normal (400)" },
+        { "value": "500", "label": "Medium (500)" },
+        { "value": "600", "label": "SemiBold (600)" },
+        { "value": "700", "label": "Bold (700)" },
+        { "value": "900", "label": "Heavy (900)" }
+      ],
+      "default": "700"
     },
     {
       "type": "range",
@@ -229,6 +317,19 @@
       "default": 18
     },
     {
+      "type": "select",
+      "id": "step_title_font_weight",
+      "label": "Step Title Font Weight",
+      "options": [
+        { "value": "400", "label": "Normal (400)" },
+        { "value": "500", "label": "Medium (500)" },
+        { "value": "600", "label": "SemiBold (600)" },
+        { "value": "700", "label": "Bold (700)" },
+        { "value": "900", "label": "Heavy (900)" }
+      ],
+      "default": "600"
+    },
+    {
       "type": "color",
       "id": "step_title_color",
       "label": "Step Title Color",
@@ -257,6 +358,19 @@
       "step": 1,
       "unit": "px",
       "default": 14
+    },
+    {
+      "type": "select",
+      "id": "selected_count_font_weight",
+      "label": "Selected Count Font Weight",
+      "options": [
+        { "value": "400", "label": "Normal (400)" },
+        { "value": "500", "label": "Medium (500)" },
+        { "value": "600", "label": "SemiBold (600)" },
+        { "value": "700", "label": "Bold (700)" },
+        { "value": "900", "label": "Heavy (900)" }
+      ],
+      "default": "500"
     },
     {
       "type": "color",
@@ -332,7 +446,127 @@
     },
     {
       "type": "header",
-      "content": "Review Panel Text Settings"
+      "content": "Review Panel Settings"
+    },
+    {
+      "type": "color",
+      "id": "review_bg_color",
+      "label": "Review Panel Background Color",
+      "default": "#EDF4FF"
+    },
+    {
+      "type": "color",
+      "id": "review_text_color",
+      "label": "Review Panel Text Color",
+      "default": "#1F1F1F"
+    },
+    {
+      "type": "range",
+      "id": "review_max_width",
+      "label": "Review Panel Max Width",
+      "min": 300,
+      "max": 500,
+      "step": 5,
+      "unit": "px",
+      "default": 380
+    },
+    {
+      "type": "range",
+      "id": "review_padding_x",
+      "label": "Horizontal Padding",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "review_padding_y",
+      "label": "Vertical Padding",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "review_margin_top",
+      "label": "Margin Top (Desktop)",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "review_border_radius",
+      "label": "Border Radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "review_thumbnail_size",
+      "label": "Product Thumbnail Size",
+      "min": 30,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "select",
+      "id": "review_title_font_family",
+      "label": "Review Title Font Family",
+      "options": [
+        { "value": "Gilroy-Regular", "label": "Gilroy Regular" },
+        { "value": "Gilroy-Medium", "label": "Gilroy Medium" },
+        { "value": "Gilroy-semibold", "label": "Gilroy SemiBold" },
+        { "value": "Gilroy-Bold", "label": "Gilroy Bold" },
+        { "value": "Gilroy-Heavy", "label": "Gilroy Heavy" }
+      ],
+      "default": "Gilroy-Bold"
+    },
+    {
+      "type": "range",
+      "id": "review_title_font_size",
+      "label": "Review Title Font Size",
+      "min": 16,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "review_title_font_weight",
+      "label": "Review Title Font Weight",
+      "options": [
+        { "value": "400", "label": "Normal (400)" },
+        { "value": "500", "label": "Medium (500)" },
+        { "value": "600", "label": "SemiBold (600)" },
+        { "value": "700", "label": "Bold (700)" },
+        { "value": "900", "label": "Heavy (900)" }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "color",
+      "id": "checkout_btn_bg",
+      "label": "Checkout Button Background",
+      "default": "#4E2FD2"
+    },
+    {
+      "type": "color",
+      "id": "checkout_btn_text",
+      "label": "Checkout Button Text Color",
+      "default": "#FFFFFF"
     },
     {
       "type": "text",
@@ -425,6 +659,19 @@
       "step": 1,
       "unit": "px",
       "default": 16
+    },
+    {
+      "type": "select",
+      "id": "price_font_weight",
+      "label": "Price Font Weight",
+      "options": [
+        { "value": "400", "label": "Normal (400)" },
+        { "value": "500", "label": "Medium (500)" },
+        { "value": "600", "label": "SemiBold (600)" },
+        { "value": "700", "label": "Bold (700)" },
+        { "value": "900", "label": "Heavy (900)" }
+      ],
+      "default": "600"
     },
     {
       "type": "color",
@@ -601,11 +848,11 @@
           "type": "range",
           "id": "card_image_offset_y",
           "label": "Image Vertical Offset (Move Up/Down)",
-          "min": -30,
-          "max": 30,
+          "min": 0,
+          "max": 60,
           "step": 2,
           "unit": "px",
-          "default": 0
+          "default": 30
         },
         {
           "type": "range",
@@ -652,6 +899,19 @@
           "default": 16
         },
         {
+          "type": "select",
+          "id": "card_title_font_weight",
+          "label": "Product Title Font Weight",
+          "options": [
+            { "value": "400", "label": "Normal (400)" },
+            { "value": "500", "label": "Medium (500)" },
+            { "value": "600", "label": "SemiBold (600)" },
+            { "value": "700", "label": "Bold (700)" },
+            { "value": "900", "label": "Heavy (900)" }
+          ],
+          "default": "700"
+        },
+        {
           "type": "color",
           "id": "card_title_color",
           "label": "Product Title Color",
@@ -666,6 +926,19 @@
           "step": 1,
           "unit": "px",
           "default": 12
+        },
+        {
+          "type": "select",
+          "id": "card_desc_font_weight",
+          "label": "Description Font Weight",
+          "options": [
+            { "value": "400", "label": "Normal (400)" },
+            { "value": "500", "label": "Medium (500)" },
+            { "value": "600", "label": "SemiBold (600)" },
+            { "value": "700", "label": "Bold (700)" },
+            { "value": "900", "label": "Heavy (900)" }
+          ],
+          "default": "400"
         },
         {
           "type": "color",

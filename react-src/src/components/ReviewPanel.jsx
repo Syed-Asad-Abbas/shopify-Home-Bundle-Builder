@@ -79,149 +79,159 @@ const ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, as
 
   return (
     <div className="review-panel">
-      <div className="review-header-label">{s.review_header_label || 'REVIEW'}</div>
-      <div className="review-title-wrapper">
-        <div className="review-title">{s.review_panel_title || 'Your security system'}</div>
-        <div className="review-subtitle">{s.review_panel_subtitle || 'Review your personalized protection system designed to keep what matters most safe.'}</div>
-      </div>
+      <div className="review-panel-left">
+        <div className="review-header-label">{s.review_header_label || 'REVIEW'}</div>
+        <div className="review-title-wrapper">
+          <div className="review-title">{s.review_panel_title || 'Your security system'}</div>
+          <div className="review-subtitle">{s.review_panel_subtitle || 'Review your personalized protection system designed to keep what matters most safe.'}</div>
+        </div>
 
-      <div className="review-items">
-        {categoryConfigs.map(({ key, label }) => {
-          const items = groupedItems[key];
-          if (!items || items.length === 0) return null;
+        <div className="review-items">
+          {categoryConfigs.map(({ key, label }) => {
+            const items = groupedItems[key];
+            if (!items || items.length === 0) return null;
 
-          return (
-            <div key={key} className="review-category-group">
-              <div className="review-category-header">{label}</div>
-              
-              {items.map(item => {
-                const isPlan = item.product.category === 'Plan';
+            return (
+              <div key={key} className="review-category-group">
+                <div className="review-category-header">{label}</div>
+                
+                {items.map(item => {
+                  const isPlan = item.product.category === 'Plan';
 
-                if (isPlan) {
+                  if (isPlan) {
+                    return (
+                      <div key={item.key} className="review-line-item plan-line-item">
+                        <div className="review-plan-left">
+                          <PlanIcon className="plan-icon" />
+                          <span className="plan-title">
+                            Cam <span className="plan-title-highlight">{s.plan_highlight_text || 'Unlimited'}</span>
+                          </span>
+                        </div>
+                        <div className="review-price">
+                          <span className="compare-price">${((item.comparePrice * item.quantity) / 100).toFixed(2)}/mo</span>
+                          <span className="active-price">${((item.price * item.quantity) / 100).toFixed(2)}/mo</span>
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
-                    <div key={item.key} className="review-line-item plan-line-item">
-                      <div className="review-plan-left">
-                        <PlanIcon className="plan-icon" />
-                        <span className="plan-title">
-                          Cam <span className="plan-title-highlight">{s.plan_highlight_text || 'Unlimited'}</span>
-                        </span>
+                    <div key={item.key} className="review-line-item">
+                      <div className="review-thumbnail">
+                        <img src={item.product.images?.[0] || ''} alt={item.product.title} />
+                      </div>
+                      <div className="review-details">
+                        <h4>{item.product.title}</h4>
+                      </div>
+                      <div className="review-stepper">
+                        <button 
+                          type="button"
+                          onClick={() => onQuantityChange(item.productId, item.variantId, item.quantity - 1)}
+                          aria-label="Decrease quantity"
+                        >
+                          −
+                        </button>
+                        <span>{item.quantity}</span>
+                        <button 
+                          type="button"
+                          onClick={() => onQuantityChange(item.productId, item.variantId, item.quantity + 1)}
+                          aria-label="Increase quantity"
+                        >
+                          +
+                        </button>
                       </div>
                       <div className="review-price">
-                        <span className="compare-price">${((item.comparePrice * item.quantity) / 100).toFixed(2)}/mo</span>
-                        <span className="active-price">${((item.price * item.quantity) / 100).toFixed(2)}/mo</span>
+                        {item.comparePrice > item.price && (
+                          <span className="compare-price">
+                            ${((item.comparePrice * item.quantity) / 100).toFixed(2)}
+                          </span>
+                        )}
+                        <span className="active-price">
+                          {item.price === 0 ? (s.shipping_price_text || 'FREE') : `$${((item.price * item.quantity) / 100).toFixed(2)}`}
+                        </span>
                       </div>
                     </div>
                   );
-                }
-
-                return (
-                  <div key={item.key} className="review-line-item">
-                    <div className="review-thumbnail">
-                      <img src={item.product.images?.[0] || ''} alt={item.product.title} />
-                    </div>
-                    <div className="review-details">
-                      <h4>{item.product.title}</h4>
-                    </div>
-                    <div className="review-stepper">
-                      <button 
-                        type="button"
-                        onClick={() => onQuantityChange(item.productId, item.variantId, item.quantity - 1)}
-                        aria-label="Decrease quantity"
-                      >
-                        −
-                      </button>
-                      <span>{item.quantity}</span>
-                      <button 
-                        type="button"
-                        onClick={() => onQuantityChange(item.productId, item.variantId, item.quantity + 1)}
-                        aria-label="Increase quantity"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <div className="review-price">
-                      {item.comparePrice > item.price && (
-                        <span className="compare-price">
-                          ${((item.comparePrice * item.quantity) / 100).toFixed(2)}
-                        </span>
-                      )}
-                      <span className="active-price">
-                        {item.price === 0 ? (s.shipping_price_text || 'FREE') : `$${((item.price * item.quantity) / 100).toFixed(2)}`}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-
-        {/* Fast Shipping Row */}
-        {cartItems.length > 0 && (
-          <div className="review-category-group shipping-group">
-            <div className="review-line-item shipping-row">
-              <div className="review-thumbnail shipping-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00A88F" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="1" y="3" width="15" height="13" rx="1.5"></rect>
-                  <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                  <line x1="1" y1="9" x2="6" y2="9"></line>
-                  <line x1="2" y1="12" x2="5" y2="12"></line>
-                </svg>
+                })}
               </div>
-              <div className="review-details">
-                <h4>{s.shipping_title || 'Fast Shipping'}</h4>
-              </div>
-              <div className="review-price">
-                <span className="compare-price">{s.shipping_compare_text || '$5.99'}</span>
-                <span className="active-price">{s.shipping_price_text || 'FREE'}</span>
+            );
+          })}
+
+          {/* Fast Shipping Row */}
+          {cartItems.length > 0 && (
+            <div className="review-category-group shipping-group">
+              <div className="review-line-item shipping-row">
+                <div className="review-thumbnail shipping-icon-box">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00A88F" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="1" y="3" width="15" height="13" rx="1.5"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                    <line x1="1" y1="9" x2="6" y2="9"></line>
+                    <line x1="2" y1="12" x2="5" y2="12"></line>
+                  </svg>
+                </div>
+                <div className="review-details">
+                  <h4>{s.shipping_title || 'Fast Shipping'}</h4>
+                </div>
+                <div className="review-price">
+                  <span className="compare-price">{s.shipping_compare_text || '$5.99'}</span>
+                  <span className="active-price">{s.shipping_price_text || 'FREE'}</span>
+                </div>
               </div>
             </div>
+          )}
+
+          {cartItems.length === 0 && <p className="empty-cart-msg">{s.empty_cart_text || 'Your bundle is empty.'}</p>}
+        </div>
+      </div>
+
+      <div className="review-panel-right">
+        {/* Guarantee Badge & Pricing Block */}
+        <div className="review-summary-footer">
+          <div className="review-guarantee-block">
+            <div className="guarantee-badge">
+              <img 
+                src={assetUrls?.satisfactionBadge || '/satisfaction-badge.png'} 
+                alt="100% Wyze satisfaction guarantee" 
+                className="satisfaction-badge-img" 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            </div>
+            <div className="guarantee-text">
+              <h4>{s.guarantee_title || '30-day hassle-free returns'}</h4>
+              <p>{s.guarantee_desc || "If you're not totally in love with the product, we will refund you 100%."}</p>
+            </div>
+          </div>
+
+          <div className="totals-section">
+            <div className="financing-pill">
+              <span className="financing-pill-text">{s.financing_pill_text || 'as low as $19.19/mo'}</span>
+            </div>
+            <div className="totals-row">
+              <span className="compare-price strikethrough">${compareAtTotal}</span>
+              <span className="final-total">${activeTotal}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Savings Callout */}
+        {savings > 0 && (
+          <div className="savings-callout">
+            {s.savings_prefix_text || "Congrats! You're saving $"}{savings}{s.savings_suffix_text || " on your security bundle!"}
           </div>
         )}
 
-        {cartItems.length === 0 && <p className="empty-cart-msg">{s.empty_cart_text || 'Your bundle is empty.'}</p>}
+        {/* Checkout Button */}
+        <button type="button" className="btn btn-checkout" onClick={handleCheckout}>
+          {s.checkout_button_text || 'Checkout'}
+        </button>
+        
+        {/* Save for later link */}
+        <button type="button" className="save-later-link" onClick={onSaveForLater}>
+          {s.save_for_later_text || 'Save my system for later'}
+        </button>
       </div>
-
-      {/* Guarantee Badge & Pricing Block */}
-      <div className="review-summary-footer">
-        <div className="guarantee-badge">
-          <img 
-            src={assetUrls?.satisfactionBadge || '/satisfaction-badge.png'} 
-            alt="100% Wyze satisfaction guarantee" 
-            className="satisfaction-badge-img" 
-            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-          />
-        </div>
-
-        <div className="totals-section">
-          <div className="financing-pill">
-            <span className="financing-pill-text">{s.financing_pill_text || 'as low as $19.19/mo'}</span>
-          </div>
-          <div className="totals-row">
-            <span className="compare-price strikethrough">${compareAtTotal}</span>
-            <span className="final-total">${activeTotal}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Savings Callout */}
-      {savings > 0 && (
-        <div className="savings-callout">
-          {s.savings_prefix_text || "Congrats! You're saving $"}{savings}{s.savings_suffix_text || " on your security bundle!"}
-        </div>
-      )}
-
-      {/* Checkout Button */}
-      <button type="button" className="btn btn-checkout" onClick={handleCheckout}>
-        {s.checkout_button_text || 'Checkout'}
-      </button>
-      
-      {/* Save for later link */}
-      <button type="button" className="save-later-link" onClick={onSaveForLater}>
-        {s.save_for_later_text || 'Save my system for later'}
-      </button>
     </div>
   );
 };

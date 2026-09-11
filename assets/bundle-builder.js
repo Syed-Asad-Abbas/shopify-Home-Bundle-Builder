@@ -10127,6 +10127,7 @@ var require_client = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 */
 var require_react_jsx_runtime_production = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var REACT_ELEMENT_TYPE = Symbol.for("react.transitional.element");
+	var REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
 	function jsxProd(type, config, maybeKey) {
 		var key = null;
 		void 0 !== maybeKey && (key = "" + maybeKey);
@@ -10144,6 +10145,7 @@ var require_react_jsx_runtime_production = /* @__PURE__ */ __commonJSMin(((expor
 			props: maybeKey
 		};
 	}
+	exports.Fragment = REACT_FRAGMENT_TYPE;
 	exports.jsx = jsxProd;
 	exports.jsxs = jsxProd;
 }));
@@ -10272,15 +10274,20 @@ var VariantSelector = ({ variants = [], activeVariant, setActiveVariant, product
 *  - onQuantityChange (Function): Handler to update quantities.
 *  - Returns: JSX Element
 */
-var StepCard = ({ product, cartState, onQuantityChange, assetUrls = {} }) => {
+var StepCard = ({ product, cartState, onQuantityChange, assetUrls = {}, sectionSettings = {} }) => {
 	const [activeVariant, setActiveVariant] = (0, import_react.useState)(product.variants?.[0] || null);
 	const quantity = cartState[`${product.id}-${activeVariant?.id || ""}`] || 0;
 	const comparePrice = activeVariant?.compare_at_price || product.compare_at_price;
 	const currentPrice = activeVariant?.price || product.price;
 	const hasDiscount = comparePrice && comparePrice > currentPrice;
 	const discountPercent = hasDiscount ? Math.round((comparePrice - currentPrice) / comparePrice * 100) : 0;
-	const displayBadge = product.badgeText || (hasDiscount ? `Save ${discountPercent}%` : null);
+	const showStatusBadges = sectionSettings.show_status_badges !== false;
+	const showHoverImage = sectionSettings.enable_hover_image !== false;
+	const aspectRatio = sectionSettings.card_aspect_ratio || "square";
+	let displayBadge = product.badgeText;
+	if (!displayBadge && showStatusBadges) displayBadge = hasDiscount ? `Save ${discountPercent}%` : null;
 	const cardImage = activeVariant?.featured_image?.src || activeVariant?.image || product.images?.[0];
+	const hoverImage = showHoverImage && product.images?.[1] ? product.images[1] : null;
 	const isSelected = (product.variants && product.variants.length > 0 ? product.variants.reduce((sum, v) => sum + (cartState[`${product.id}-${v.id}`] || 0), 0) : quantity) > 0;
 	const getPx = (val, fallback) => {
 		if (val === null || val === void 0 || val === "") return fallback;
@@ -10299,12 +10306,14 @@ var StepCard = ({ product, cartState, onQuantityChange, assetUrls = {} }) => {
 		"--card-border-radius": getPx(s.card_border_radius, "12px"),
 		"--card-image-width": getPx(s.card_image_width, "120px"),
 		"--card-image-height": getPx(s.card_image_height, "120px"),
-		"--card-image-offset-y": getPx(s.card_image_offset_y, "0px"),
+		"--card-image-offset-y": s.card_image_offset_y !== void 0 ? `${s.card_image_offset_y - 30}px` : "0px",
 		"--card-image-padding": getPx(s.card_image_padding, "0px"),
 		"--card-title-font-family": s.card_title_font_family ? `'${s.card_title_font_family}', sans-serif` : "'Gilroy-Bold', sans-serif",
 		"--card-title-font-size": getPx(s.card_title_font_size, "16px"),
+		"--card-title-font-weight": s.card_title_font_weight || "700",
 		"--card-title-color": getColor(s.card_title_color, "var(--text-dark)"),
 		"--card-desc-font-size": getPx(s.card_desc_font_size, "12px"),
+		"--card-desc-font-weight": s.card_desc_font_weight || "400",
 		"--card-desc-color": getColor(s.card_desc_color, "#6F7882"),
 		"--variant-text-color": getColor(s.variant_text_color, "#4A5568"),
 		"--variant-border-color": getColor(s.variant_border_color, "#E4E7EC"),
@@ -10323,33 +10332,82 @@ var StepCard = ({ product, cartState, onQuantityChange, assetUrls = {} }) => {
 	*  - delta (Number): Amount to increment or decrement (+1 or -1).
 	*  - Returns: void (Triggers onQuantityChange callback).
 	*/
-	const handleStepper = (delta) => {
+	const handleStepper = (delta, e) => {
+		console.log(`[StepCard] handleStepper triggered with delta: ${delta}`, e?.target);
 		if (!activeVariant) return;
 		const newQuantity = Math.max(0, quantity + delta);
 		onQuantityChange(product.id, activeVariant.id, newQuantity);
 	};
+	/**
+	* Goal: Handle clicks on the entire card to toggle product selection.
+	* Method: Toggles quantity between 1 and 0, ignoring clicks on buttons or links.
+	*/
+	const handleCardClick = (e) => {
+		console.log("[StepCard] handleCardClick (top-level wrapper) triggered.");
+		console.log("[StepCard] Event target:", e.target);
+		console.log("[StepCard] Event currentTarget:", e.currentTarget);
+		if (typeof window !== "undefined" && window.Shopify && window.Shopify.designMode) return;
+		if (e.target.closest("button") || e.target.closest("a") || e.target.closest(".variant-swatch") || e.target.closest(".variant-btn") || e.target.closest(".variant-selector")) {
+			console.log("[StepCard] handleCardClick early exit: Click was inside a button/link/variant selector.", { target: e.target });
+			return;
+		}
+		if (!activeVariant) {
+			console.log("[StepCard] handleCardClick early exit: No activeVariant.");
+			return;
+		}
+		console.log("[StepCard] handleCardClick proceeding to toggle quantity.");
+		const newQuantity = quantity === 0 ? 1 : 0;
+		onQuantityChange(product.id, activeVariant.id, newQuantity);
+	};
+	let shopifyEditorBlock = product.blockId ? JSON.stringify({
+		id: product.blockId,
+		type: "bundle_product"
+	}) : void 0;
+	if (product.shopifyAttributes) {
+		const match = product.shopifyAttributes.match(/data-shopify-editor-block=["']([^"']+)["']/);
+		if (match && match[1]) shopifyEditorBlock = match[1].replace(/&quot;/g, "\"");
+	}
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: `step-card ${isSelected ? "selected" : ""}`,
-		style: cardCustomStyles,
-		"data-shopify-editor-block": product.blockId ? JSON.stringify({ id: product.blockId }) : void 0,
+		className: `step-card shopify-block shopify-app-block ${isSelected ? "selected" : ""}`,
+		style: {
+			cursor: "pointer",
+			...cardCustomStyles
+		},
+		onClick: handleCardClick,
+		"data-shopify-editor-block": shopifyEditorBlock,
+		"data-block-id": product.blockId,
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			className: "step-card-image-wrapper",
+			className: `step-card-image-wrapper aspect-${aspectRatio} ${hoverImage ? "has-hover" : ""}`,
+			onClick: (e) => console.log("[StepCard] step-card-image-wrapper clicked", e.target),
 			children: [displayBadge && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 				className: "discount-badge",
+				onClick: (e) => console.log("[StepCard] discount-badge clicked", e.target),
 				children: displayBadge
-			}), cardImage ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
+			}), cardImage ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
 				src: cardImage,
-				alt: product.title
-			}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "primary-image",
+				alt: product.title,
+				onClick: (e) => console.log("[StepCard] img clicked", e.target)
+			}), hoverImage && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
+				src: hoverImage,
+				className: "secondary-image",
+				alt: `${product.title} alternate`
+			})] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				className: "placeholder-image",
+				onClick: (e) => console.log("[StepCard] placeholder-image clicked", e.target),
 				children: "Image"
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "step-card-info",
+			onClick: (e) => console.log("[StepCard] step-card-info clicked", e.target),
 			children: [
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: product.title }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+					onClick: (e) => console.log("[StepCard] h3 title clicked", e.target),
+					children: product.title
+				}),
 				product.description && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 					className: "step-card-description",
+					onClick: (e) => console.log("[StepCard] description clicked", e.target),
 					children: product.description
 				}),
 				product.learnMoreUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
@@ -10358,44 +10416,58 @@ var StepCard = ({ product, cartState, onQuantityChange, assetUrls = {} }) => {
 					target: "_blank",
 					rel: "noreferrer",
 					onClick: (e) => {
+						console.log("[StepCard] learn-more-link clicked", e.target);
 						if (typeof window !== "undefined" && window.Shopify && window.Shopify.designMode) e.preventDefault();
 					},
 					children: "Learn More"
 				}),
-				product.variants && product.variants.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(VariantSelector, {
-					variants: product.variants,
-					activeVariant,
-					setActiveVariant,
-					productTitle: product.title,
-					assetUrls
+				product.variants && product.variants.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					onClick: (e) => console.log("[StepCard] variant-selector wrapper clicked", e.target),
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(VariantSelector, {
+						variants: product.variants,
+						activeVariant,
+						setActiveVariant,
+						productTitle: product.title,
+						assetUrls
+					})
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 					className: "step-card-footer",
+					onClick: (e) => console.log("[StepCard] step-card-footer clicked", e.target),
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 						className: "stepper",
+						onClick: (e) => console.log("[StepCard] stepper container clicked", e.target),
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 								type: "button",
 								className: "stepper-btn",
-								onClick: () => handleStepper(-1),
+								onClick: (e) => {
+									console.log("[StepCard] minus button onClick triggered", e.target);
+									handleStepper(-1, e);
+								},
 								disabled: quantity === 0,
 								"aria-label": "Decrease quantity",
 								children: "-"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 								className: "stepper-qty",
+								onClick: (e) => console.log("[StepCard] stepper-qty clicked", e.target),
 								children: quantity
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 								type: "button",
 								className: "stepper-btn",
-								onClick: () => handleStepper(1),
+								onClick: (e) => {
+									console.log("[StepCard] plus button onClick triggered", e.target);
+									handleStepper(1, e);
+								},
 								"aria-label": "Increase quantity",
 								children: "+"
 							})
 						]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 						className: "price-container",
+						onClick: (e) => console.log("[StepCard] price-container clicked", e.target),
 						children: [hasDiscount && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
 							className: "compare-price",
 							children: ["$", (comparePrice / 100).toFixed(2)]
@@ -10725,7 +10797,7 @@ var AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQuan
 			const selectedCount = getSelectedCount(step.category);
 			const stepProducts = products.filter((p) => p.category === step.category);
 			return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "item-wrapper",
+				className: `item-wrapper ${isOpen ? "open" : "closed"}`,
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 					className: "accordion-title-row",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: (s.step_prefix_text || "STEP {id} OF 4").replace("{id}", step.id) })
@@ -10848,236 +10920,249 @@ var ReviewPanel = ({ products, cartState, onSaveForLater, onQuantityChange, asse
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "review-panel",
-		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				className: "review-header-label",
-				children: s.review_header_label || "REVIEW"
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "review-title-wrapper",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					className: "review-title",
-					children: s.review_panel_title || "Your security system"
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					className: "review-subtitle",
-					children: s.review_panel_subtitle || "Review your personalized protection system designed to keep what matters most safe."
-				})]
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "review-items",
-				children: [
-					categoryConfigs.map(({ key, label }) => {
-						const items = groupedItems[key];
-						if (!items || items.length === 0) return null;
-						return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "review-category-group",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								className: "review-category-header",
-								children: label
-							}), items.map((item) => {
-								if (item.product.category === "Plan") return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "review-line-item plan-line-item",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										className: "review-plan-left",
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PlanIcon, { className: "plan-icon" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-											className: "plan-title",
-											children: ["Cam ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												className: "plan-title-highlight",
-												children: s.plan_highlight_text || "Unlimited"
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "review-panel-left",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					className: "review-header-label",
+					children: s.review_header_label || "REVIEW"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "review-title-wrapper",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "review-title",
+						children: s.review_panel_title || "Your security system"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "review-subtitle",
+						children: s.review_panel_subtitle || "Review your personalized protection system designed to keep what matters most safe."
+					})]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "review-items",
+					children: [
+						categoryConfigs.map(({ key, label }) => {
+							const items = groupedItems[key];
+							if (!items || items.length === 0) return null;
+							return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "review-category-group",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									className: "review-category-header",
+									children: label
+								}), items.map((item) => {
+									if (item.product.category === "Plan") return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										className: "review-line-item plan-line-item",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											className: "review-plan-left",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PlanIcon, { className: "plan-icon" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+												className: "plan-title",
+												children: ["Cam ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+													className: "plan-title-highlight",
+													children: s.plan_highlight_text || "Unlimited"
+												})]
 											})]
-										})]
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										className: "review-price",
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-											className: "compare-price",
-											children: [
-												"$",
-												(item.comparePrice * item.quantity / 100).toFixed(2),
-												"/mo"
-											]
-										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-											className: "active-price",
-											children: [
-												"$",
-												(item.price * item.quantity / 100).toFixed(2),
-												"/mo"
-											]
-										})]
-									})]
-								}, item.key);
-								return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "review-line-item",
-									children: [
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											className: "review-thumbnail",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
-												src: item.product.images?.[0] || "",
-												alt: item.product.title
-											})
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											className: "review-details",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: item.product.title })
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "review-stepper",
-											children: [
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-													type: "button",
-													onClick: () => onQuantityChange(item.productId, item.variantId, item.quantity - 1),
-													"aria-label": "Decrease quantity",
-													children: "−"
-												}),
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: item.quantity }),
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-													type: "button",
-													onClick: () => onQuantityChange(item.productId, item.variantId, item.quantity + 1),
-													"aria-label": "Increase quantity",
-													children: "+"
-												})
-											]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 											className: "review-price",
-											children: [item.comparePrice > item.price && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
 												className: "compare-price",
-												children: ["$", (item.comparePrice * item.quantity / 100).toFixed(2)]
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												children: [
+													"$",
+													(item.comparePrice * item.quantity / 100).toFixed(2),
+													"/mo"
+												]
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
 												className: "active-price",
-												children: item.price === 0 ? s.shipping_price_text || "FREE" : `$${(item.price * item.quantity / 100).toFixed(2)}`
+												children: [
+													"$",
+													(item.price * item.quantity / 100).toFixed(2),
+													"/mo"
+												]
 											})]
-										})
-									]
-								}, item.key);
-							})]
-						}, key);
-					}),
-					cartItems.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						className: "review-category-group shipping-group",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "review-line-item shipping-row",
-							children: [
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									className: "review-thumbnail shipping-icon-box",
-									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
-										width: "24",
-										height: "24",
-										viewBox: "0 0 24 24",
-										fill: "none",
-										stroke: "#00A88F",
-										strokeWidth: "1.75",
-										strokeLinecap: "round",
-										strokeLinejoin: "round",
+										})]
+									}, item.key);
+									return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										className: "review-line-item",
 										children: [
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
-												x: "1",
-												y: "3",
-												width: "15",
-												height: "13",
-												rx: "1.5"
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+												className: "review-thumbnail",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
+													src: item.product.images?.[0] || "",
+													alt: item.product.title
+												})
 											}),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", { points: "16 8 20 8 23 11 23 16 16 16 16 8" }),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-												cx: "5.5",
-												cy: "18.5",
-												r: "2.5"
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+												className: "review-details",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: item.product.title })
 											}),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-												cx: "18.5",
-												cy: "18.5",
-												r: "2.5"
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												className: "review-stepper",
+												children: [
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+														type: "button",
+														onClick: () => onQuantityChange(item.productId, item.variantId, item.quantity - 1),
+														"aria-label": "Decrease quantity",
+														children: "−"
+													}),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: item.quantity }),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+														type: "button",
+														onClick: () => onQuantityChange(item.productId, item.variantId, item.quantity + 1),
+														"aria-label": "Increase quantity",
+														children: "+"
+													})
+												]
 											}),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
-												x1: "1",
-												y1: "9",
-												x2: "6",
-												y2: "9"
-											}),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
-												x1: "2",
-												y1: "12",
-												x2: "5",
-												y2: "12"
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												className: "review-price",
+												children: [item.comparePrice > item.price && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+													className: "compare-price",
+													children: ["$", (item.comparePrice * item.quantity / 100).toFixed(2)]
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+													className: "active-price",
+													children: item.price === 0 ? s.shipping_price_text || "FREE" : `$${(item.price * item.quantity / 100).toFixed(2)}`
+												})]
 											})
 										]
+									}, item.key);
+								})]
+							}, key);
+						}),
+						cartItems.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "review-category-group shipping-group",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "review-line-item shipping-row",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										className: "review-thumbnail shipping-icon-box",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+											width: "24",
+											height: "24",
+											viewBox: "0 0 24 24",
+											fill: "none",
+											stroke: "#00A88F",
+											strokeWidth: "1.75",
+											strokeLinecap: "round",
+											strokeLinejoin: "round",
+											children: [
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+													x: "1",
+													y: "3",
+													width: "15",
+													height: "13",
+													rx: "1.5"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", { points: "16 8 20 8 23 11 23 16 16 16 16 8" }),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+													cx: "5.5",
+													cy: "18.5",
+													r: "2.5"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+													cx: "18.5",
+													cy: "18.5",
+													r: "2.5"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+													x1: "1",
+													y1: "9",
+													x2: "6",
+													y2: "9"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+													x1: "2",
+													y1: "12",
+													x2: "5",
+													y2: "12"
+												})
+											]
+										})
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										className: "review-details",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: s.shipping_title || "Fast Shipping" })
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										className: "review-price",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											className: "compare-price",
+											children: s.shipping_compare_text || "$5.99"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											className: "active-price",
+											children: s.shipping_price_text || "FREE"
+										})]
 									})
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									className: "review-details",
-									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: s.shipping_title || "Fast Shipping" })
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "review-price",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										className: "compare-price",
-										children: s.shipping_compare_text || "$5.99"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										className: "active-price",
-										children: s.shipping_price_text || "FREE"
-									})]
-								})
-							]
+								]
+							})
+						}),
+						cartItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "empty-cart-msg",
+							children: s.empty_cart_text || "Your bundle is empty."
 						})
-					}),
-					cartItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						className: "empty-cart-msg",
-						children: s.empty_cart_text || "Your bundle is empty."
-					})
-				]
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "review-summary-footer",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					className: "guarantee-badge",
-					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
-						src: assetUrls?.satisfactionBadge || "/satisfaction-badge.png",
-						alt: "100% Wyze satisfaction guarantee",
-						className: "satisfaction-badge-img",
-						onError: (e) => {
-							e.currentTarget.style.display = "none";
-						}
-					})
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					className: "totals-section",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						className: "financing-pill",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							className: "financing-pill-text",
-							children: s.financing_pill_text || "as low as $19.19/mo"
-						})
+					]
+				})
+			]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "review-panel-right",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "review-summary-footer",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "review-guarantee-block",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "guarantee-badge",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
+								src: assetUrls?.satisfactionBadge || "/satisfaction-badge.png",
+								alt: "100% Wyze satisfaction guarantee",
+								className: "satisfaction-badge-img",
+								onError: (e) => {
+									e.currentTarget.style.display = "none";
+								}
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "guarantee-text",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: s.guarantee_title || "30-day hassle-free returns" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: s.guarantee_desc || "If you're not totally in love with the product, we will refund you 100%." })]
+						})]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "totals-row",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-							className: "compare-price strikethrough",
-							children: ["$", compareAtTotal]
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-							className: "final-total",
-							children: ["$", activeTotal]
+						className: "totals-section",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "financing-pill",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "financing-pill-text",
+								children: s.financing_pill_text || "as low as $19.19/mo"
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "totals-row",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+								className: "compare-price strikethrough",
+								children: ["$", compareAtTotal]
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+								className: "final-total",
+								children: ["$", activeTotal]
+							})]
 						})]
 					})]
-				})]
-			}),
-			savings > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "savings-callout",
-				children: [
-					s.savings_prefix_text || "Congrats! You're saving $",
-					savings,
-					s.savings_suffix_text || " on your security bundle!"
-				]
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-				type: "button",
-				className: "btn btn-checkout",
-				onClick: handleCheckout,
-				children: s.checkout_button_text || "Checkout"
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-				type: "button",
-				className: "save-later-link",
-				onClick: onSaveForLater,
-				children: s.save_for_later_text || "Save my system for later"
-			})
-		]
+				}),
+				savings > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "savings-callout",
+					children: [
+						s.savings_prefix_text || "Congrats! You're saving $",
+						savings,
+						s.savings_suffix_text || " on your security bundle!"
+					]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+					type: "button",
+					className: "btn btn-checkout",
+					onClick: handleCheckout,
+					children: s.checkout_button_text || "Checkout"
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+					type: "button",
+					className: "save-later-link",
+					onClick: onSaveForLater,
+					children: s.save_for_later_text || "Save my system for later"
+				})
+			]
+		})]
 	});
 };
 var products_default = {
@@ -11441,7 +11526,8 @@ var App = () => {
 		"--stepper-bg": s.stepper_bg || "#F4F5F7",
 		"--stepper-text-color": s.stepper_text_color || "#1F1F1F",
 		"--stepper-border-color": s.stepper_border_color || "#E4E7EC",
-		"--stepper-border-radius": s.stepper_border_radius !== void 0 ? `${s.stepper_border_radius}px` : "6px"
+		"--stepper-border-radius": s.stepper_border_radius !== void 0 ? `${s.stepper_border_radius}px` : "6px",
+		"--review-bg-color": s.review_bg_color || "#EDF4FF"
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "bundle-builder-container",

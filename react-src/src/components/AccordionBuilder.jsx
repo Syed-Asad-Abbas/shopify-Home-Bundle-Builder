@@ -53,7 +53,7 @@ const AccordionBuilder = ({ products, cartState, activeStep, setActiveStep, onQu
         const stepProducts = products.filter(p => p.category === step.category);
 
         return (
-          <div key={step.id} className="item-wrapper">
+          <div key={step.id} className={`item-wrapper ${isOpen ? 'open' : 'closed'}`}>
             <div className="accordion-title-row">
               <span>{(s.step_prefix_text || 'STEP {id} OF 4').replace('{id}', step.id)}</span>
             </div>
