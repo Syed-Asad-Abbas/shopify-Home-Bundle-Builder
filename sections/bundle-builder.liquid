@@ -56,6 +56,12 @@
                 {{ image.src | image_url: width: 800 | json }}{% unless forloop.last %},{% endunless %}
               {% endfor %}
             ],
+            "customImage": {% if block.settings.custom_image %}{{ block.settings.custom_image | image_url: width: 800 | json }}{% else %}null{% endif %},
+            "customVariantImages": [
+              {% if block.settings.custom_variant_image_1 %}{{ block.settings.custom_variant_image_1 | image_url: width: 800 | json }}{% else %}null{% endif %},
+              {% if block.settings.custom_variant_image_2 %}{{ block.settings.custom_variant_image_2 | image_url: width: 800 | json }}{% else %}null{% endif %},
+              {% if block.settings.custom_variant_image_3 %}{{ block.settings.custom_variant_image_3 | image_url: width: 800 | json }}{% else %}null{% endif %}
+            ],
             "category": {{ block.settings.category | json }},
             "shopifyAttributes": {{ block.shopify_attributes | json }},
             "blockSettings": {{ block.settings | json }}
@@ -250,7 +256,7 @@
         { "value": "700", "label": "Bold (700)" },
         { "value": "900", "label": "Heavy (900)" }
       ],
-      "default": "700"
+      "default": "400"
     },
     {
       "type": "range",
@@ -327,7 +333,7 @@
         { "value": "700", "label": "Bold (700)" },
         { "value": "900", "label": "Heavy (900)" }
       ],
-      "default": "600"
+      "default": "400"
     },
     {
       "type": "color",
@@ -370,7 +376,7 @@
         { "value": "700", "label": "Bold (700)" },
         { "value": "900", "label": "Heavy (900)" }
       ],
-      "default": "500"
+      "default": "400"
     },
     {
       "type": "color",
@@ -554,7 +560,7 @@
         { "value": "700", "label": "Bold (700)" },
         { "value": "900", "label": "Heavy (900)" }
       ],
-      "default": "700"
+      "default": "400"
     },
     {
       "type": "color",
@@ -671,7 +677,7 @@
         { "value": "700", "label": "Bold (700)" },
         { "value": "900", "label": "Heavy (900)" }
       ],
-      "default": "600"
+      "default": "400"
     },
     {
       "type": "color",
@@ -781,6 +787,26 @@
           "type": "url",
           "id": "learn_more_url",
           "label": "Learn More URL (optional)"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_image",
+          "label": "Custom Product Image (Main)"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_variant_image_1",
+          "label": "Custom Variant Image 1"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_variant_image_2",
+          "label": "Custom Variant Image 2"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_variant_image_3",
+          "label": "Custom Variant Image 3"
         },
         {
           "type": "header",
@@ -909,7 +935,7 @@
             { "value": "700", "label": "Bold (700)" },
             { "value": "900", "label": "Heavy (900)" }
           ],
-          "default": "700"
+          "default": "400"
         },
         {
           "type": "color",

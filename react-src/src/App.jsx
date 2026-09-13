@@ -217,8 +217,28 @@ const App = () => {
     '--review-bg-color': s.review_bg_color || '#EDF4FF'
   };
 
+  const handleAppClick = (e) => {
+    if (typeof window !== 'undefined' && window.Shopify && window.Shopify.designMode) {
+      // If clicking inside a product card (block), let Shopify handle the block selection natively
+      if (e.target.closest('[data-shopify-editor-block]')) {
+        return;
+      }
+      
+      // Otherwise, force the customizer to select the section settings
+      const sectionNode = document.getElementById('bundle-builder-container');
+      const shopifySection = sectionNode ? sectionNode.closest('.shopify-section') : null;
+      if (shopifySection) {
+        const sectionId = shopifySection.id.replace('shopify-section-', '');
+        window.parent.postMessage({
+          type: 'shopify:inspector:activate',
+          id: sectionId
+        }, '*');
+      }
+    }
+  };
+
   return (
-    <div className="bundle-builder-container" style={customStyles}>
+    <div className="bundle-builder-container" style={customStyles} onClick={handleAppClick}>
       <h1 className="section-title">{s.heading || "Let's get started!"}</h1>
       
       <div className="bundle-builder-grid">

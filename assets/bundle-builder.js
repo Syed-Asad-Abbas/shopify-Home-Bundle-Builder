@@ -10197,7 +10197,7 @@ var getVariantImageUrl = (productTitle = "", variantTitle = "", variant = {}, as
 *  - assetUrls (Object): Dynamic asset URLs mapping.
 *  - Returns: JSX Element.
 */
-var VariantThumbnail = ({ productTitle = "", variantTitle = "", variant = {}, assetUrls = {} }) => {
+var VariantThumbnail = ({ productTitle = "", variantTitle = "", variant = {}, assetUrls = {}, customImage = null }) => {
 	const [imgError, setImgError] = (0, import_react.useState)(false);
 	const normalized = variantTitle.toLowerCase().trim();
 	let bg = "#FFFFFF";
@@ -10209,7 +10209,7 @@ var VariantThumbnail = ({ productTitle = "", variantTitle = "", variant = {}, as
 		bg = "#1F1F1F";
 		border = "#000000";
 	}
-	const imageUrl = getVariantImageUrl(productTitle, variantTitle, variant, assetUrls);
+	const imageUrl = customImage || getVariantImageUrl(productTitle, variantTitle, variant, assetUrls);
 	if (imageUrl && !imgError) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
 		src: imageUrl,
 		alt: variantTitle,
@@ -10236,14 +10236,15 @@ var VariantThumbnail = ({ productTitle = "", variantTitle = "", variant = {}, as
 *  - assetUrls (Object): Dynamic asset URLs mapping.
 *  - Returns: JSX Element.
 */
-var VariantSelector = ({ variants = [], activeVariant, setActiveVariant, productTitle = "", assetUrls = {} }) => {
+var VariantSelector = ({ variants = [], activeVariant, setActiveVariant, productTitle = "", assetUrls = {}, customVariantImages = [] }) => {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "variant-selector",
 		role: "radiogroup",
 		"aria-label": "Product variants",
-		children: variants.map((variant) => {
+		children: variants.map((variant, index) => {
 			const isActive = activeVariant?.id === variant.id;
 			const title = variant.title || variant.option1 || "Option";
+			const customImage = customVariantImages[index] || null;
 			return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
 				type: "button",
 				className: `variant-btn ${isActive ? "active" : ""}`,
@@ -10254,7 +10255,8 @@ var VariantSelector = ({ variants = [], activeVariant, setActiveVariant, product
 					productTitle,
 					variantTitle: title,
 					variant,
-					assetUrls
+					assetUrls,
+					customImage
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 					className: "variant-btn-text",
 					children: title
@@ -10286,7 +10288,8 @@ var StepCard = ({ product, cartState, onQuantityChange, assetUrls = {}, sectionS
 	const aspectRatio = sectionSettings.card_aspect_ratio || "square";
 	let displayBadge = product.badgeText;
 	if (!displayBadge && showStatusBadges) displayBadge = hasDiscount ? `Save ${discountPercent}%` : null;
-	const cardImage = activeVariant?.featured_image?.src || activeVariant?.image || product.images?.[0];
+	const activeVariantIndex = product.variants ? product.variants.findIndex((v) => v.id === activeVariant?.id) : -1;
+	const cardImage = (activeVariantIndex >= 0 ? product.customVariantImages?.[activeVariantIndex] : null) || product.customImage || activeVariant?.featured_image?.src || activeVariant?.image || product.images?.[0];
 	const hoverImage = showHoverImage && product.images?.[1] ? product.images[1] : null;
 	const isSelected = (product.variants && product.variants.length > 0 ? product.variants.reduce((sum, v) => sum + (cartState[`${product.id}-${v.id}`] || 0), 0) : quantity) > 0;
 	const getPx = (val, fallback) => {
@@ -10359,22 +10362,28 @@ var StepCard = ({ product, cartState, onQuantityChange, assetUrls = {}, sectionS
 		const newQuantity = quantity === 0 ? 1 : 0;
 		onQuantityChange(product.id, activeVariant.id, newQuantity);
 	};
-	let shopifyEditorBlock = product.blockId ? JSON.stringify({
-		id: product.blockId,
-		type: "bundle_product"
-	}) : void 0;
-	if (product.shopifyAttributes) {
-		const match = product.shopifyAttributes.match(/data-shopify-editor-block=["']([^"']+)["']/);
-		if (match && match[1]) shopifyEditorBlock = match[1].replace(/&quot;/g, "\"");
-	}
+	const cardRef = import_react.useRef(null);
+	import_react.useEffect(() => {
+		if (cardRef.current && product.shopifyAttributes) {
+			const temp = document.createElement("div");
+			temp.innerHTML = `<div ${product.shopifyAttributes}></div>`;
+			const attrs = temp.firstChild.attributes;
+			for (let i = 0; i < attrs.length; i++) if (attrs[i].name !== "class") cardRef.current.setAttribute(attrs[i].name, attrs[i].value);
+			else {
+				const existingClasses = cardRef.current.className;
+				const newClasses = attrs[i].value.split(" ").filter((c) => !existingClasses.includes(c)).join(" ");
+				if (newClasses) cardRef.current.className = `${existingClasses} ${newClasses}`;
+			}
+		}
+	}, [product.shopifyAttributes]);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: `step-card shopify-block shopify-app-block ${isSelected ? "selected" : ""}`,
+		ref: cardRef,
+		className: `step-card shopify-app-block ${isSelected ? "selected" : ""}`,
 		style: {
 			cursor: "pointer",
 			...cardCustomStyles
 		},
 		onClick: handleCardClick,
-		"data-shopify-editor-block": shopifyEditorBlock,
 		"data-block-id": product.blockId,
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: `step-card-image-wrapper aspect-${aspectRatio} ${hoverImage ? "has-hover" : ""}`,
@@ -10428,7 +10437,8 @@ var StepCard = ({ product, cartState, onQuantityChange, assetUrls = {}, sectionS
 						activeVariant,
 						setActiveVariant,
 						productTitle: product.title,
-						assetUrls
+						assetUrls,
+						customVariantImages: product.customVariantImages
 					})
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -11529,9 +11539,24 @@ var App = () => {
 		"--stepper-border-radius": s.stepper_border_radius !== void 0 ? `${s.stepper_border_radius}px` : "6px",
 		"--review-bg-color": s.review_bg_color || "#EDF4FF"
 	};
+	const handleAppClick = (e) => {
+		if (typeof window !== "undefined" && window.Shopify && window.Shopify.designMode) {
+			if (e.target.closest("[data-shopify-editor-block]")) return;
+			const sectionNode = document.getElementById("bundle-builder-container");
+			const shopifySection = sectionNode ? sectionNode.closest(".shopify-section") : null;
+			if (shopifySection) {
+				const sectionId = shopifySection.id.replace("shopify-section-", "");
+				window.parent.postMessage({
+					type: "shopify:inspector:activate",
+					id: sectionId
+				}, "*");
+			}
+		}
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "bundle-builder-container",
 		style: customStyles,
+		onClick: handleAppClick,
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
 			className: "section-title",
 			children: s.heading || "Let's get started!"

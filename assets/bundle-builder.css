@@ -62,7 +62,7 @@ body {
 .section-title {
   width: 100%;
   font-family: var(--section-heading-font, 'Gilroy-Bold', sans-serif);
-  font-weight: var(--section-heading-weight, 700);
+  font-weight: var(--section-heading-weight, 400);
   font-size: var(--section-heading-size, 32px);
   line-height: 1.2;
   letter-spacing: -0.06px;
@@ -97,7 +97,7 @@ body {
 
 .accordion-title-row span {
   font-family: 'Gilroy-medium', sans-serif;
-  font-weight: 500;
+  font-weight: 400;
   font-size: 11px;
   line-height: 100%;
   letter-spacing: 1.6px;
@@ -155,7 +155,7 @@ body {
 
 .accordion-header-left h2 {
   font-family: var(--step-title-font-family, 'Gilroy-semibold', sans-serif);
-  font-weight: var(--step-title-font-weight, 600);
+  font-weight: var(--step-title-font-weight, 400);
   font-size: var(--step-title-font-size, 18px);
   line-height: 100%;
   letter-spacing: 0px;
@@ -172,7 +172,7 @@ body {
 
 .accordion-header-right .selected-text {
   font-family: var(--selected-count-font-family, 'Gilroy-Medium', sans-serif);
-  font-weight: var(--selected-count-font-weight, 500);
+  font-weight: var(--selected-count-font-weight, 400);
   font-size: var(--selected-count-font-size, 14px);
   line-height: 16px;
   letter-spacing: 0px;
@@ -328,7 +328,7 @@ body {
 
 .step-card-info h3 {
   font-family: var(--card-title-font-family, 'Gilroy-Bold', sans-serif);
-  font-weight: var(--card-title-font-weight, 700);
+  font-weight: var(--card-title-font-weight, 400);
   font-size: var(--card-title-font-size, 16px);
   line-height: 1.25;
   margin-bottom: 4px;
@@ -388,7 +388,7 @@ body {
   border: 1.5px solid var(--variant-active-border, #00A88F);
   background-color: var(--variant-active-bg, #F0FDF4);
   color: #0B0D10;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .variant-swatch-img {
@@ -472,7 +472,7 @@ body {
 .price-container .compare-price {
   font-family: 'Gilroy-Medium', sans-serif;
   font-size: calc(var(--price-font-size, 16px) * 0.75);
-  font-weight: var(--price-font-weight, 600);
+  font-weight: var(--price-font-weight, 400);
   color: var(--compare-price-color, #E04F44);
   text-decoration: line-through;
   line-height: 1.1;
@@ -482,7 +482,7 @@ body {
 .price-container .active-price {
   font-family: 'Gilroy-Bold', sans-serif;
   font-size: var(--price-font-size, 16px);
-  font-weight: var(--price-font-weight, 600);
+  font-weight: var(--price-font-weight, 400);
   color: var(--price-color, #1F1F1F);
   line-height: 1.1;
 }
@@ -654,7 +654,7 @@ body {
   border: none;
   color: #1F1F1F;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 400;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -730,7 +730,7 @@ body {
 
 .plan-title-highlight {
   color: var(--primary-color);
-  font-weight: 700;
+  font-weight: 400;
 }
 
 /* Shipping row */
@@ -828,7 +828,7 @@ body {
   font-size: 13.5px;
   text-align: center;
   margin: 18px 0 14px 0;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .btn-checkout {
@@ -838,7 +838,7 @@ body {
   color: var(--checkout-btn-text, var(--white));
   font-family: 'Gilroy-Bold', sans-serif;
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 400;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -1293,7 +1293,7 @@ body {
     
     font-family: 'TT Norms Pro', 'Gilroy-Bold', sans-serif;
     font-style: normal;
-    font-weight: 700;
+    font-weight: 400;
     font-size: 17px;
     line-height: 22px;
     color: #FFFFFF;

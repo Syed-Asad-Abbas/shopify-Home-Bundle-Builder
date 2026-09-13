@@ -37,8 +37,12 @@ const StepCard = ({ product, cartState, onQuantityChange, assetUrls = {}, sectio
     displayBadge = hasDiscount ? `Save ${discountPercent}%` : null;
   }
 
-  // Variant image fallback: check if active variant has an image, else use primary product image
-  const cardImage = activeVariant?.featured_image?.src || activeVariant?.image || product.images?.[0];
+  // Get active variant index to fetch corresponding custom image if available
+  const activeVariantIndex = product.variants ? product.variants.findIndex(v => v.id === activeVariant?.id) : -1;
+  const customVariantImage = activeVariantIndex >= 0 ? product.customVariantImages?.[activeVariantIndex] : null;
+
+  // Variant image fallback: prioritize custom variant/product images, then default variant image, then primary product image
+  const cardImage = customVariantImage || product.customImage || activeVariant?.featured_image?.src || activeVariant?.image || product.images?.[0];
   const hoverImage = showHoverImage && product.images?.[1] ? product.images[1] : null;
 
   // Determine if this product has any quantity selected in cart across all variants
@@ -141,23 +145,34 @@ const StepCard = ({ product, cartState, onQuantityChange, assetUrls = {}, sectio
     onQuantityChange(product.id, activeVariant.id, newQuantity);
   };
 
-  // Extract exact data-shopify-editor-block from raw Liquid output to ensure Customizer compatibility
-  let shopifyEditorBlock = product.blockId ? JSON.stringify({ id: product.blockId, type: "bundle_product" }) : undefined;
-  if (product.shopifyAttributes) {
-    // block.shopify_attributes outputs a string like: class="shopify-block" data-shopify-editor-block="{&quot;id&quot;:&quot;...&quot;}"
-    const match = product.shopifyAttributes.match(/data-shopify-editor-block=["']([^"']+)["']/);
-    if (match && match[1]) {
-      // Decode HTML entities if present
-      shopifyEditorBlock = match[1].replace(/&quot;/g, '"');
+  const cardRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (cardRef.current && product.shopifyAttributes) {
+      const temp = document.createElement('div');
+      temp.innerHTML = `<div ${product.shopifyAttributes}></div>`;
+      const attrs = temp.firstChild.attributes;
+      for (let i = 0; i < attrs.length; i++) {
+        if (attrs[i].name !== 'class') {
+          cardRef.current.setAttribute(attrs[i].name, attrs[i].value);
+        } else {
+          // Merge Shopify classes with existing classes
+          const existingClasses = cardRef.current.className;
+          const newClasses = attrs[i].value.split(' ').filter(c => !existingClasses.includes(c)).join(' ');
+          if (newClasses) {
+            cardRef.current.className = `${existingClasses} ${newClasses}`;
+          }
+        }
+      }
     }
-  }
+  }, [product.shopifyAttributes]);
 
   return (
     <div
-      className={`step-card shopify-block shopify-app-block ${isSelected ? 'selected' : ''}`}
+      ref={cardRef}
+      className={`step-card shopify-app-block ${isSelected ? 'selected' : ''}`}
       style={{ cursor: 'pointer', ...cardCustomStyles }}
       onClick={handleCardClick}
-      data-shopify-editor-block={shopifyEditorBlock}
       data-block-id={product.blockId}
     >
       {/* Product Image & Optional Discount Badge */}
@@ -211,6 +226,7 @@ const StepCard = ({ product, cartState, onQuantityChange, assetUrls = {}, sectio
               setActiveVariant={setActiveVariant}
               productTitle={product.title}
               assetUrls={assetUrls}
+              customVariantImages={product.customVariantImages}
             />
           </div>
         )}

@@ -57,7 +57,7 @@ const getVariantImageUrl = (productTitle = '', variantTitle = '', variant = {}, 
  *  - assetUrls (Object): Dynamic asset URLs mapping.
  *  - Returns: JSX Element.
  */
-const VariantThumbnail = ({ productTitle = '', variantTitle = '', variant = {}, assetUrls = {} }) => {
+const VariantThumbnail = ({ productTitle = '', variantTitle = '', variant = {}, assetUrls = {}, customImage = null }) => {
   const [imgError, setImgError] = useState(false);
   const normalized = variantTitle.toLowerCase().trim();
 
@@ -72,7 +72,7 @@ const VariantThumbnail = ({ productTitle = '', variantTitle = '', variant = {}, 
     border = '#000000';
   }
 
-  const imageUrl = getVariantImageUrl(productTitle, variantTitle, variant, assetUrls);
+  const imageUrl = customImage || getVariantImageUrl(productTitle, variantTitle, variant, assetUrls);
 
   if (imageUrl && !imgError) {
     return (
@@ -105,12 +105,13 @@ const VariantThumbnail = ({ productTitle = '', variantTitle = '', variant = {}, 
  *  - assetUrls (Object): Dynamic asset URLs mapping.
  *  - Returns: JSX Element.
  */
-const VariantSelector = ({ variants = [], activeVariant, setActiveVariant, productTitle = '', assetUrls = {} }) => {
+const VariantSelector = ({ variants = [], activeVariant, setActiveVariant, productTitle = '', assetUrls = {}, customVariantImages = [] }) => {
   return (
     <div className="variant-selector" role="radiogroup" aria-label="Product variants">
-      {variants.map((variant) => {
+      {variants.map((variant, index) => {
         const isActive = activeVariant?.id === variant.id;
         const title = variant.title || variant.option1 || 'Option';
+        const customImage = customVariantImages[index] || null;
         return (
           <button
             key={variant.id}
@@ -125,6 +126,7 @@ const VariantSelector = ({ variants = [], activeVariant, setActiveVariant, produ
               variantTitle={title} 
               variant={variant}
               assetUrls={assetUrls}
+              customImage={customImage}
             />
             <span className="variant-btn-text">{title}</span>
           </button>
